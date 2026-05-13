@@ -1,0 +1,16 @@
+LogicCircuitSimulator/
+    execs/
+        -- Where all build files will go
+    src/
+        classes/
+            -- Where all main classes for the game will go (circuit objects, etc.)
+        handlers/
+            -- Where all the handlers go to manage game state (fonts, settings, sound, menus, etc.)
+        ui/
+            components/
+                -- Reusable ui components such as back buttons
+            menus/
+                -- Different menus and their designs
+        utils/
+            -- General purpose utilities created during the field guide journey.
+        main.cpp
