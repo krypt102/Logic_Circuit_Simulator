@@ -1,6 +1,10 @@
+#include <iostream>
 #include "splashkit.h"
+#include "utils/terminal_utils.h"
 
 int main() {
-    write_line("Hello, Logic Circuit Simulator");
+    print_info("Information message");
+    print_warning("Warning message");
+    print_error("Error message");
     return 0;
 }
