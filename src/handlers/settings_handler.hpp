@@ -19,10 +19,12 @@ using namespace std;
 const string SETTINGS_FILE_PATH = "game_settings.txt";
 const int DEFAULT_WIDTH = 1280;
 const int DEFAULT_HEIGHT = 720;
+const double DEFAULT_BG_VOL = 0.5;
 
-const map<string, string> DEFAULT_SETTINGS = {
+const std::map<std::string, std::string> DEFAULT_SETTINGS = {
     {"screenWidth",  std::to_string(DEFAULT_WIDTH)},
     {"screenHeight", std::to_string(DEFAULT_HEIGHT)},
+    {"bgVolume", std::to_string(DEFAULT_BG_VOL)},
 };
 
 enum settings_type {
@@ -32,9 +34,10 @@ enum settings_type {
     STRING
 };
 
-const map<string, settings_type> VALID_SETTING_TYPES = {
+const std::map<std::string, settings_type> VALID_SETTING_TYPES = {
     {"screenWidth", INT},
     {"screenHeight", INT},
+    {"bgVolume",DOUBLE}
 };
 
 class invalid_setting_key {};
