@@ -14,5 +14,8 @@ int main() {
     UiHandler ui_handler;
     ui_handler.init_window(game_settings);
 
+    print_info("Initialising menu system");
+    delay(3000);
+
     return 0;
 }
