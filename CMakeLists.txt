@@ -24,5 +24,6 @@ add_executable(Logic_Circuit_Simulator
         src/ui/menus/new_file_menu.hpp
         src/classes/Pin.hpp
         src/classes/Pin.hpp
-        src/classes/Pin.hpp)
+        src/classes/Pin.hpp
+        src/classes/Wire.hpp)
 target_link_libraries(Logic_Circuit_Simulator PRIVATE SplashKit)
