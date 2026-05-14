@@ -5,7 +5,7 @@ class MenuHandler;
 
 class Menu {
 public:
-    virtual ~Menu();
+    virtual ~Menu() = default;
 
     virtual void on_enter(MenuHandler& menu_handler) = 0;
     virtual void handle_input() = 0;

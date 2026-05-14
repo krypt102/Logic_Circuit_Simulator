@@ -13,5 +13,6 @@ add_executable(Logic_Circuit_Simulator
         src/handlers/ui_handler.hpp
         src/classes/Menu.hpp
         src/handlers/menu_handler.cpp
-        src/handlers/menu_handler.hpp)
+        src/handlers/menu_handler.hpp
+        src/handlers/font_handler.hpp)
 target_link_libraries(Logic_Circuit_Simulator PRIVATE SplashKit)
