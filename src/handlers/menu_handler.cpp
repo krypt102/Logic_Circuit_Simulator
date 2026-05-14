@@ -4,7 +4,7 @@
 void MenuHandler::push(std::unique_ptr<Menu> menu) {
     Menu* raw = menu.get();
     menus.push_back(std::move(menu));
-    raw->on_enter(*this);
+    raw->on_enter(window_handler, *this);
 }
 
 void MenuHandler::pop() {
@@ -14,7 +14,7 @@ void MenuHandler::pop() {
     }
 
     menus.pop_back();
-    current_menu()->on_enter(*this);
+    current_menu()->on_enter(window_handler, *this);
 }
 
 void MenuHandler::update() const {

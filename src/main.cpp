@@ -1,10 +1,12 @@
 #include <iostream>
 #include "splashkit.h"
 #include "handlers/font_handler.hpp"
+#include "handlers/menu_handler.hpp"
 #include "handlers/settings_handler.hpp"
 #include "handlers/sound_handler.hpp"
 #include "utils/terminal_utils.h"
-#include "handlers/ui_handler.hpp"
+#include "handlers/window_handler.hpp"
+#include "ui/menus/main_menu.hpp"
 
 int main() {
     print_info("Initialising game");
@@ -13,8 +15,8 @@ int main() {
     game_settings.load_settings();
 
     print_info("Initialising window");
-    UiHandler ui_handler;
-    ui_handler.init_window(game_settings);
+    WindowHandler window_handler;
+    window_handler.init_window(game_settings);
 
     print_info("Initialising fonts");
     FontHandler font_handler;
@@ -31,7 +33,17 @@ int main() {
     }
 
     print_info("Initialising menu system");
-    delay(3000);
+    MenuHandler menu_handler = MenuHandler(window_handler);
+    menu_handler.push(std::make_unique<MainMenu>(window_handler.window_width, window_handler.window_height));
+
+    print_info("Starting main game loop");
+    while (!window_close_requested("Logic Circuit Simulator")) {
+        process_events();
+        menu_handler.update();
+        draw_interface();
+        refresh_screen(60);
+    }
+    print_info("Quit requested");
 
     return 0;
 }
