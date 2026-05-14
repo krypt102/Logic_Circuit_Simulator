@@ -36,7 +36,7 @@ public:
         // load_font("JetBrainsMono_Reg", "JetBrainsMono-Regular.ttf");
         print_info("Initialised fonts successfully");
         // print_error("Deliberate error to halt");
-        return 1;
+        return 0;
     }
 };
 
