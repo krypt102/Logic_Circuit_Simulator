@@ -45,7 +45,10 @@ int main() {
     play_music(background_music, 10000, bg_volume);
     while (!window_close_requested("Logic Circuit Simulator")) {
         process_events();
-        set_interface_font_size(0);
+        // This is temporary...
+        // ... once the main buttons and framework are designed, regular text will replace all native splashkit functions
+        // ... because it does not allow for multiple font sizes within one interface
+        set_interface_font_size(24);
         menu_handler.update();
         draw_interface();
         refresh_screen(60);

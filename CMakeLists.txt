@@ -17,5 +17,9 @@ add_executable(Logic_Circuit_Simulator
         src/handlers/font_handler.hpp
         src/handlers/sound_handler.hpp
         src/ui/menus/main_menu.hpp
-        src/ui/menus/main_menu.cpp)
+        src/ui/menus/main_menu.cpp
+        src/ui/components/BackButton.cpp
+        src/ui/components/BackButton.hpp
+        src/ui/menus/new_file_menu.cpp
+        src/ui/menus/new_file_menu.hpp)
 target_link_libraries(Logic_Circuit_Simulator PRIVATE SplashKit)

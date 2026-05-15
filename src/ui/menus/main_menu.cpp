@@ -1,5 +1,6 @@
 #include "main_menu.hpp"
 
+#include "new_file_menu.hpp"
 #include "splashkit.h"
 #include "../../handlers/menu_handler.hpp"
 #include "../../handlers/window_handler.hpp"
@@ -56,7 +57,9 @@ void MainMenu::draw() const {
 
     if (new_file_clicked) {
         play_sound_effect("ui_click");
-        print_warning("Debug - New file clicked;");
+        menu_handler->push(
+            std::make_unique<NewFileMenu>(window_handler->window_width, window_handler->window_height)
+        );
     } else if (load_file_clicked) {
         play_sound_effect("ui_click");
         print_warning("Debug - Load file clicked;");
