@@ -24,7 +24,7 @@ private:
     std::string gate_type_to_save_string(GateType type);
     bool string_to_gate_type(const std::string& str, GateType& out_type);
 
-    std::vector<std::string> split_csv(const std::string& line);
+    std::vector<std::string> split_line(const std::string& line);
 };
 
 #endif //LOGIC_CIRCUIT_SIMULATOR_CIRCUIT_FILE_HANDLER_HPP
