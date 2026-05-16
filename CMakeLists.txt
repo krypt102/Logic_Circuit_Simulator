@@ -28,5 +28,7 @@ add_executable(Logic_Circuit_Simulator
         src/classes/Wire.hpp
         src/classes/Gate.hpp
         src/classes/Gate.cpp
-        src/classes/Circuit.hpp)
+        src/classes/Circuit.hpp
+        src/handlers/circuit_file_handler.cpp
+        src/handlers/circuit_file_handler.hpp)
 target_link_libraries(Logic_Circuit_Simulator PRIVATE SplashKit)
