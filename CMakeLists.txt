@@ -30,5 +30,7 @@ add_executable(Logic_Circuit_Simulator
         src/classes/Gate.cpp
         src/classes/Circuit.hpp
         src/handlers/circuit_file_handler.cpp
-        src/handlers/circuit_file_handler.hpp)
+        src/handlers/circuit_file_handler.hpp
+        src/ui/menus/load_file_menu.cpp
+        src/ui/menus/load_file_menu.hpp)
 target_link_libraries(Logic_Circuit_Simulator PRIVATE SplashKit)

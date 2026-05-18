@@ -65,7 +65,6 @@ void NewFileMenu::handle_input() {
     float desc_box_caption_y_position = desc_box_y_position + (FORM_HEIGHT / 2.0f / 2.0f);
     draw_text(desc_box_caption, COLOR_BLACK, FONT_STR, caption_text_size, desc_box_caption_x_position, desc_box_caption_y_position);
 
-    set_interface_font_size(caption_text_size);
     new_file_name = text_box(new_file_name, rectangle_from(name_box_x_position, name_box_y_position, FORM_WIDTH, FORM_HEIGHT));
     new_file_desc = text_box(new_file_desc, rectangle_from(desc_box_x_position, desc_box_y_position, FORM_WIDTH, FORM_HEIGHT));
 

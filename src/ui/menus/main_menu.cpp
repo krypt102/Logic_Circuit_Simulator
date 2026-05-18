@@ -1,5 +1,6 @@
 #include "main_menu.hpp"
 
+#include "load_file_menu.hpp"
 #include "new_file_menu.hpp"
 #include "splashkit.h"
 #include "../../handlers/menu_handler.hpp"
@@ -62,7 +63,9 @@ void MainMenu::draw() const {
         );
     } else if (load_file_clicked) {
         play_sound_effect("ui_click");
-        print_warning("Debug - Load file clicked;");
+        menu_handler->push(
+            std::make_unique<LoadFileMenu>(window_handler->window_width, window_handler->window_height)
+        );
     } else if (settings_btn_clicked) {
         play_sound_effect("ui_click");
         print_warning("Debug - Settings clicked;");
