@@ -16,9 +16,9 @@ private:
     int window_width;
     int window_height;
 
-    std::string error_message;
-    std::string new_file_name;
-    std::string new_file_desc;
+    mutable std::string error_message;
+    mutable std::string new_file_name;
+    mutable std::string new_file_desc;
 
     float last_text_box_x_position = 0.0f;
     float last_text_box_y_position = 0.0f;
@@ -26,6 +26,7 @@ private:
     WindowHandler* window_handler = nullptr;
     MenuHandler* menu_handler = nullptr;
 
+    void try_create_project() const;
 };
 
 

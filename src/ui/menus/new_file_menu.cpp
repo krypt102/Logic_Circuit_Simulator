@@ -1,5 +1,6 @@
 #include "new_file_menu.hpp"
 #include "../../handlers/menu_handler.hpp"
+#include "../../handlers/circuit_file_handler.hpp"
 #include "splashkit.h"
 #include "../components/BackButton.hpp"
 
@@ -16,6 +17,33 @@ void NewFileMenu::on_enter(WindowHandler& win_handler, MenuHandler& main_handler
     window_handler = &win_handler;
     menu_handler = &main_handler;
     error_message.clear();
+}
+
+void NewFileMenu::try_create_project() const {
+    if (new_file_name.empty()) {
+        error_message = "Please enter a file name.";
+        return;
+    }
+
+    CircuitFileHandler file_handler;
+    if (file_handler.save_exists(new_file_name)) {
+        error_message = "A circuit named '" + new_file_name + "' already exists.";
+        return;
+    }
+
+    Circuit new_circuit(new_file_name, new_file_desc);
+    bool saved = file_handler.save_circuit(new_circuit);
+    if (!saved) {
+        error_message = "Failed to save circuit. Check the saves folder.";
+        return;
+    }
+
+    print_info("Created new circuit: " + new_file_name);
+
+    new_file_name.clear();
+    new_file_desc.clear();
+    error_message.clear();
+    menu_handler->pop();
 }
 
 void NewFileMenu::handle_input() {
@@ -66,7 +94,7 @@ void NewFileMenu::draw() const {
 
     if (create_button_pressed) {
         play_sound_effect("ui_click");
-        print_warning("Clicked create");
+        try_create_project();
     }
     if (!error_message.empty()) {
         float error_x_position = (window_width / 2.0f) - (text_width(error_message, FONT_STR, 16) / 2.0f);
