@@ -7,6 +7,8 @@
 
 #include <filesystem>
 
+#include "circuit_editor_menu.hpp"
+
 const float FILE_BUTTON_WIDTH  = 440.0f;
 const float FILE_BUTTON_HEIGHT = 48.0f;
 const float FILE_BUTTON_GAP = 12.0f;
@@ -56,9 +58,9 @@ void LoadFileMenu::open_circuit(const std::string& filename) const {
     }
 
     print_info("LoadFileMenu: circuit loaded: " + loaded_circuit->circuit_name);
-
-    print_warning("This is where the editor will load");
-    error_message = "Editor not yet done.";
+    menu_handler->push(
+        std::make_unique<CircuitEditorMenu>(std::move(*loaded_circuit), window_handler->window_width, window_handler->window_height)
+    );
 }
 
 void LoadFileMenu::handle_input() {}
@@ -85,7 +87,7 @@ void LoadFileMenu::draw() const {
 
     float button_x = (window_width / 2.0f) - (FILE_BUTTON_WIDTH / 2.0f);
 
-    for (int i = 0; i < static_cast<int>(save_file_names.size()); i++) {
+    for (int i = 0; i < (int)(save_file_names.size()); i++) {
         float button_y = FILE_LIST_START_Y + i * (FILE_BUTTON_HEIGHT + FILE_BUTTON_GAP);
 
         bool clicked = button(save_file_names[i], rectangle_from(

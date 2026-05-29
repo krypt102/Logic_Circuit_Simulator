@@ -1,4 +1,6 @@
 #include "new_file_menu.hpp"
+
+#include "circuit_editor_menu.hpp"
 #include "../../handlers/menu_handler.hpp"
 #include "../../handlers/circuit_file_handler.hpp"
 #include "splashkit.h"
@@ -31,8 +33,8 @@ void NewFileMenu::try_create_project() const {
         return;
     }
 
-    Circuit new_circuit(new_file_name, new_file_desc);
-    bool saved = file_handler.save_circuit(new_circuit);
+    Circuit created_circuit(new_file_name, new_file_desc);
+    bool saved = file_handler.save_circuit(created_circuit);
     if (!saved) {
         error_message = "Failed to save circuit. Check the saves folder.";
         return;
@@ -43,7 +45,9 @@ void NewFileMenu::try_create_project() const {
     new_file_name.clear();
     new_file_desc.clear();
     error_message.clear();
-    menu_handler->pop();
+    menu_handler->push(
+        std::make_unique<CircuitEditorMenu>(std::move(created_circuit), window_handler->window_width, window_handler->window_height)
+    );
 }
 
 void NewFileMenu::handle_input() {
