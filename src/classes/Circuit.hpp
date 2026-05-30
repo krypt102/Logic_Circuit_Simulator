@@ -138,6 +138,12 @@ struct Circuit {
         return nullptr;
     }
 
+    // ------Circuit Simulation-----------------------------------------------------
+    // -------------------------------------------------------------------------
+
+    void simulate() {}
+
+
 private:
     void remove_wires_connected_to(int object_id, WireConnectionType node_type) {
         std::erase_if(circuit_wires, [object_id, node_type](const Wire& wire) {

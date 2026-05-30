@@ -7,13 +7,15 @@ struct Pin {
     float y_position;
     bool is_output_pin;
     int connected_wire_id;
+    bool value;
 
     Pin(int id, float x, float y, bool is_output)
         : pin_id(id),
         x_position(x),
         y_position(y),
         is_output_pin(is_output),
-        connected_wire_id(-1)
+        connected_wire_id(-1),
+        value(false)
     {};
 };
 
