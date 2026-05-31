@@ -324,6 +324,20 @@ bool CircuitEditorMenu::is_valid_wire_connection(
         return false;
     }
 
+    const WireEndpoint &input_side = from_is_output ? to : from;
+
+    for (const Wire &wire_to_check : circuit.circuit_wires) {
+        bool has_input_already = (
+            wire_to_check.to_type == input_side.object_type &&
+            wire_to_check.to_id == input_side.object_id &&
+            wire_to_check.to_pin_id == input_side.pin_id
+        );
+
+        if (has_input_already) {
+            return false;
+        }
+    }
+
     for (const Wire &wire_to_check : circuit.circuit_wires) {
         bool same_forward = (
             wire_to_check.from_type == from.object_type &&
