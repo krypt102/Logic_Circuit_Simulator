@@ -20,11 +20,15 @@ const string SETTINGS_FILE_PATH = "game_settings.txt";
 const int DEFAULT_WIDTH = 1280;
 const int DEFAULT_HEIGHT = 720;
 const double DEFAULT_BG_VOL = 0.5;
+const double DEFAULT_SFX_VOL = 1.0;
+const bool DEFAULT_SHOW_GRID = true;
 
 const std::map<std::string, std::string> DEFAULT_SETTINGS = {
     {"screenWidth",  std::to_string(DEFAULT_WIDTH)},
     {"screenHeight", std::to_string(DEFAULT_HEIGHT)},
     {"bgVolume", std::to_string(DEFAULT_BG_VOL)},
+    {"sfxVolume", std::to_string(DEFAULT_SFX_VOL)},
+    {"showGrid", DEFAULT_SHOW_GRID ? "true" : "false"},
 };
 
 enum settings_type {
@@ -35,9 +39,11 @@ enum settings_type {
 };
 
 const std::map<std::string, settings_type> VALID_SETTING_TYPES = {
-    {"screenWidth", INT},
+    {"screenWidth",  INT},
     {"screenHeight", INT},
-    {"bgVolume",DOUBLE}
+    {"bgVolume", DOUBLE},
+    {"sfxVolume", DOUBLE},
+    {"showGrid", BOOL},
 };
 
 class invalid_setting_key {};
@@ -160,6 +166,32 @@ public:
         print_info("Saving settings file");
         ofstream settings_file(SETTINGS_FILE_PATH);
         settings_file << serialise_settings();
+    }
+
+    template<typename T>
+    void set_setting(const std::string& key, T value) {
+        if (!VALID_SETTING_TYPES.contains(key)) {
+            print_error("Unknown setting key: " + key);
+            throw invalid_setting_key();
+        }
+
+        std::string str_value;
+        if constexpr (std::is_same_v<T, int>) {
+            str_value = std::to_string(value);
+        } else if constexpr (std::is_same_v<T, double>) {
+            str_value = std::to_string(value);
+        } else if constexpr (std::is_same_v<T, bool>) {
+            str_value = value ? "true" : "false";
+        } else if constexpr (std::is_same_v<T, std::string>) {
+            str_value = value;
+        }
+
+        if (!is_valid_setting(key, str_value)) {
+            print_error("Invalid value for setting: " + key);
+            throw invalid_setting_key();
+        }
+
+        settings[key] = str_value;
     }
 
     template<typename T>
