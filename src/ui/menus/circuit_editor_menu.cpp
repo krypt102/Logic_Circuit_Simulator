@@ -263,9 +263,12 @@ void CircuitEditorMenu::finish_wire(float mouse_x, float mouse_y) {
         return;
     }
 
+    WireEndpoint starting_source = is_output_side(wire_start) ? wire_start : wire_end;
+    WireEndpoint ending_source = is_output_side(wire_start) ? wire_end : wire_start;
+
     circuit.add_wire(
-        wire_start.object_type, wire_start.object_id, wire_start.pin_id,
-        wire_end.object_type, wire_end.object_id, wire_end.pin_id
+        starting_source.object_type, starting_source.object_id, starting_source.pin_id,
+        ending_source.object_type, ending_source.object_id, ending_source.pin_id
     );
 
     print_info("Wire added");
@@ -275,6 +278,30 @@ void CircuitEditorMenu::finish_wire(float mouse_x, float mouse_y) {
 void CircuitEditorMenu::cancel_wire() {
     drawing_wire = false;
     print_info("Wire drawing cancelled");
+}
+
+bool CircuitEditorMenu::is_output_side(const WireEndpoint &endpoint) const {
+    if (endpoint.object_type == WireConnectionType::INPUT_PIN) {
+        return true;
+    }
+
+    if (endpoint.object_type == WireConnectionType::OUTPUT_PIN) {
+        return false;
+    }
+
+    for (const Gate &gate : circuit.circuit_gates) {
+        if (gate.id != endpoint.object_id) {
+            continue;
+        }
+        for (const Pin &pin : gate.output_pins) {
+            if (pin.pin_id == endpoint.pin_id) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    return false;
 }
 
 bool CircuitEditorMenu::is_valid_wire_connection(
@@ -288,35 +315,6 @@ bool CircuitEditorMenu::is_valid_wire_connection(
         return false;
     }
 
-    auto is_output_side = [&](const WireEndpoint &end_point) -> bool {
-        if (end_point.object_type == WireConnectionType::INPUT_PIN) {
-            return true;
-        }
-
-        if (end_point.object_type == WireConnectionType::OUTPUT_PIN) {
-            return false;
-        }
-
-        const Gate *gate = nullptr;
-        for (const Gate &gate_to_check : circuit.circuit_gates) {
-            if (gate_to_check.id == end_point.object_id) {
-                gate = &gate_to_check;
-                break;
-            }
-        }
-
-        if (!gate) {
-            return false;
-        }
-
-        for (const Pin &pin_to_check : gate->output_pins) {
-            if (pin_to_check.pin_id == end_point.pin_id) {
-                return true;
-            }
-        }
-        return false;
-    };
-
     bool from_is_output = is_output_side(from);
     bool to_is_output = is_output_side(to);
 
@@ -327,13 +325,13 @@ bool CircuitEditorMenu::is_valid_wire_connection(
     const WireEndpoint &input_side = from_is_output ? to : from;
 
     for (const Wire &wire_to_check : circuit.circuit_wires) {
-        bool has_input_already = (
+        bool set_input_already = (
             wire_to_check.to_type == input_side.object_type &&
             wire_to_check.to_id == input_side.object_id &&
             wire_to_check.to_pin_id == input_side.pin_id
         );
 
-        if (has_input_already) {
+        if (set_input_already) {
             return false;
         }
     }
@@ -747,6 +745,13 @@ void CircuitEditorMenu::draw_wire(const Wire &wire) const {
                 }
             }
             break;
+        }
+    } else if (wire.from_type == WireConnectionType::OUTPUT_PIN) {
+        for (const OutputPin &pin : circuit.circuit_output_pins) {
+            if (pin.id == wire.from_id) {
+                wire_is_high = pin.value;
+                break;
+            }
         }
     }
 

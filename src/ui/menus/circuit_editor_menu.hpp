@@ -82,6 +82,7 @@ private:
     void finish_wire(float mouse_x, float mouse_y);
     void cancel_wire();
 
+    bool is_output_side(const WireEndpoint& endpoint) const;
     bool is_valid_wire_connection(const WireEndpoint& from, const WireEndpoint& to) const;
 
     int wire_at(float x, float y) const;
