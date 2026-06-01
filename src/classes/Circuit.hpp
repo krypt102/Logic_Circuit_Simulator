@@ -141,10 +141,85 @@ struct Circuit {
     // ------Circuit Simulation-----------------------------------------------------
     // -------------------------------------------------------------------------
 
-    void simulate() {}
+    void simulate() {
+        int passes = (int)(circuit_gates.size()) + 1;
+
+        for (int pass = 0; pass < passes; pass++) {
+            for (Wire& wire : circuit_wires) {
+                bool source_value = get_wire_source_value(wire);
+
+                if (wire.to_type == WireConnectionType::GATE) {
+                    Gate* gate = find_gate_with_id(wire.to_id);
+                    if (gate) {
+                        for (Pin& pin : gate->input_pins) {
+                            if (pin.pin_id == wire.to_pin_id) {
+                                pin.value = source_value;
+                            }
+                        }
+                    }
+                }
+
+                if (wire.to_type == WireConnectionType::OUTPUT_PIN) {
+                    OutputPin* pin = find_output_pin_by_id(wire.to_id);
+                    if (pin) {
+                        pin->value = source_value;
+                    }
+                }
+            }
+
+            for (Gate& gate : circuit_gates) {
+                evaluate_gate(gate);
+            }
+        }
+    }
 
 
 private:
+    bool get_wire_source_value(const Wire& wire) {
+        if (wire.from_type == WireConnectionType::INPUT_PIN) {
+            InputPin* pin = find_input_pin_by_id(wire.from_id);
+            if (pin) {
+                return pin->value;
+            }
+        }
+
+        if (wire.from_type == WireConnectionType::GATE) {
+            Gate* gate = find_gate_with_id(wire.from_id);
+            if (gate) {
+                for (Pin& pin : gate->output_pins) {
+                    if (pin.pin_id == wire.from_pin_id) {
+                        return pin.value;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    void evaluate_gate(Gate& gate) {
+        bool first_input_value = gate.input_pins[0].value;
+
+        if (gate.gate_type == GateType::NOT) {
+            gate.output_pins[0].value = !first_input_value;
+            return;
+        }
+
+        bool second_input_value = gate.input_pins[1].value;
+
+        if (gate.gate_type == GateType::AND) {
+            gate.output_pins[0].value = first_input_value && second_input_value;
+        } else if (gate.gate_type == GateType::OR) {
+            gate.output_pins[0].value = first_input_value || second_input_value;
+        } else if (gate.gate_type == GateType::NAND) {
+            gate.output_pins[0].value = !(first_input_value && second_input_value);
+        } else if (gate.gate_type == GateType::NOR) {
+            gate.output_pins[0].value = !(first_input_value || second_input_value);
+        } else if (gate.gate_type == GateType::XOR) {
+            gate.output_pins[0].value = first_input_value != second_input_value;
+        }
+    }
+
     void remove_wires_connected_to(int object_id, WireConnectionType node_type) {
         std::erase_if(circuit_wires, [object_id, node_type](const Wire& wire) {
             bool from_matches = (wire.from_type == node_type && wire.from_id == object_id);
