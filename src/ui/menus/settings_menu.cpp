@@ -15,7 +15,8 @@ SettingsMenu::SettingsMenu(int window_width, int window_height, SettingsHandler&
       settings_handler(settings_handler),
       sound_handler(sound_handler),
       bg_volume(0.0f),
-      show_grid(true)
+      show_grid(true),
+      snap_to_grid(true)
 {}
 
 void SettingsMenu::on_enter(WindowHandler& win_handler, MenuHandler& main_handler) {
@@ -24,11 +25,13 @@ void SettingsMenu::on_enter(WindowHandler& win_handler, MenuHandler& main_handle
 
     bg_volume = (float)(settings_handler.get_setting<double>("bgVolume"));
     show_grid = settings_handler.get_setting<bool>("showGrid");
+    snap_to_grid = settings_handler.get_setting<bool>("snapToGrid");
 }
 
 void SettingsMenu::apply_settings() const {
     settings_handler.set_setting("bgVolume", (double)(bg_volume));
     settings_handler.set_setting("showGrid", show_grid);
+    settings_handler.set_setting("snapToGrid", snap_to_grid);
     settings_handler.save_settings();
 
     sound_handler.set_bg_volume((double)(bg_volume));
@@ -62,6 +65,18 @@ void SettingsMenu::draw() const {
 
     draw_text("Show Grid", COLOR_BLACK, SETTINGS_FONT, (int)(SETTINGS_LABEL_FONT_SIZE), label_x, row_y + 5.0f);
     show_grid = checkbox("", show_grid, rectangle_from(control_x, row_y, SETTINGS_CONTROL_HEIGHT, SETTINGS_CONTROL_HEIGHT));
+    if (!show_grid) {
+        snap_to_grid = false;
+    }
+    row_y += SETTINGS_ROW_HEIGHT;
+
+    draw_text("Snap To Grid", COLOR_BLACK, SETTINGS_FONT, (int)(SETTINGS_LABEL_FONT_SIZE), label_x, row_y + 5.0f);
+    if (show_grid) {
+        snap_to_grid = checkbox("", snap_to_grid, rectangle_from(control_x, row_y, SETTINGS_CONTROL_HEIGHT, SETTINGS_CONTROL_HEIGHT));
+    } else {
+        draw_text("(requires Show Grid)", rgba_color(160, 160, 160, 255), SETTINGS_FONT, 14, control_x + SETTINGS_CONTROL_HEIGHT + 8.0f, row_y + 7.0f);
+        checkbox("", false, rectangle_from(control_x, row_y, SETTINGS_CONTROL_HEIGHT, SETTINGS_CONTROL_HEIGHT));
+    }
     row_y += SETTINGS_ROW_HEIGHT;
 
     float apply_button_width = 160.0f;

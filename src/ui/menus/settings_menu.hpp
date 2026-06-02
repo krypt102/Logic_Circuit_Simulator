@@ -25,6 +25,7 @@ private:
 
     mutable float bg_volume;
     mutable bool show_grid;
+    mutable bool snap_to_grid;
 
     void apply_settings() const;
 };

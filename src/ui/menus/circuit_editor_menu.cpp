@@ -41,21 +41,31 @@ const color COLOR_SIDEBAR_BG = rgba_color(45, 45, 45, 255);
 const color COLOR_SECTION_LABEL = rgba_color(160, 160, 160, 255);
 const color COLOR_HINT_PLACEMENT = rgba_color(100, 180, 255, 255);
 
-CircuitEditorMenu::CircuitEditorMenu(Circuit circuit, int window_width, int window_height)
+CircuitEditorMenu::CircuitEditorMenu(Circuit circuit, int window_width, int window_height, SettingsHandler& settings_handler)
     : circuit(std::move(circuit)),
       window_width(window_width),
-      window_height(window_height) {
+      window_height(window_height),
+      settings_handler(settings_handler) {
     print_info("CircuitEditorMenu created for circuit: " + this->circuit.circuit_name);
 }
 
 void CircuitEditorMenu::on_enter(WindowHandler &win_handler, MenuHandler &main_handler) {
     window_handler = &win_handler;
     menu_handler = &main_handler;
+    show_grid = settings_handler.get_setting<bool>("showGrid");
+    snap_to_grid = show_grid && settings_handler.get_setting<bool>("snapToGrid");
     print_info("Entered circuit editor: " + circuit.circuit_name);
 }
 
 float CircuitEditorMenu::canvas_width() const {
     return window_width - SIDEBAR_WIDTH;
+}
+
+float CircuitEditorMenu::snap_to_grid_value(float value) const {
+    if (!snap_to_grid) {
+        return value;
+    }
+    return std::round(value / GRID_CELL_SIZE) * GRID_CELL_SIZE;
 }
 
 void CircuitEditorMenu::handle_input() {
@@ -142,28 +152,28 @@ void CircuitEditorMenu::handle_mouse() {
 void CircuitEditorMenu::place_pending(float canvas_x, float canvas_y) {
     switch (pending_placement) {
         case PendingPlacement::GATE_AND:
-            circuit.add_gate(GateType::AND, canvas_x - GATE_WIDTH / 2.0f, canvas_y - GATE_HEIGHT / 2.0f);
+            circuit.add_gate(GateType::AND, snap_to_grid_value(canvas_x - GATE_WIDTH / 2.0f), snap_to_grid_value(canvas_y - GATE_HEIGHT / 2.0f));
             break;
         case PendingPlacement::GATE_OR:
-            circuit.add_gate(GateType::OR, canvas_x - GATE_WIDTH / 2.0f, canvas_y - GATE_HEIGHT / 2.0f);
+            circuit.add_gate(GateType::OR, snap_to_grid_value(canvas_x - GATE_WIDTH / 2.0f), snap_to_grid_value(canvas_y - GATE_HEIGHT / 2.0f));
             break;
         case PendingPlacement::GATE_NOT:
-            circuit.add_gate(GateType::NOT, canvas_x - GATE_WIDTH / 2.0f, canvas_y - GATE_HEIGHT / 2.0f);
+            circuit.add_gate(GateType::NOT, snap_to_grid_value(canvas_x - GATE_WIDTH / 2.0f), snap_to_grid_value(canvas_y - GATE_HEIGHT / 2.0f));
             break;
         case PendingPlacement::GATE_NAND:
-            circuit.add_gate(GateType::NAND, canvas_x - GATE_WIDTH / 2.0f, canvas_y - GATE_HEIGHT / 2.0f);
+            circuit.add_gate(GateType::NAND, snap_to_grid_value(canvas_x - GATE_WIDTH / 2.0f), snap_to_grid_value(canvas_y - GATE_HEIGHT / 2.0f));
             break;
         case PendingPlacement::GATE_NOR:
-            circuit.add_gate(GateType::NOR, canvas_x - GATE_WIDTH / 2.0f, canvas_y - GATE_HEIGHT / 2.0f);
+            circuit.add_gate(GateType::NOR, snap_to_grid_value(canvas_x - GATE_WIDTH / 2.0f), snap_to_grid_value(canvas_y - GATE_HEIGHT / 2.0f));
             break;
         case PendingPlacement::GATE_XOR:
-            circuit.add_gate(GateType::XOR, canvas_x - GATE_WIDTH / 2.0f, canvas_y - GATE_HEIGHT / 2.0f);
+            circuit.add_gate(GateType::XOR, snap_to_grid_value(canvas_x - GATE_WIDTH / 2.0f), snap_to_grid_value(canvas_y - GATE_HEIGHT / 2.0f));
             break;
         case PendingPlacement::INPUT_PIN:
-            circuit.add_input_pin(canvas_x, canvas_y);
+            circuit.add_input_pin(snap_to_grid_value(canvas_x), snap_to_grid_value(canvas_y));
             break;
         case PendingPlacement::OUTPUT_PIN:
-            circuit.add_output_pin(canvas_x, canvas_y);
+            circuit.add_output_pin(snap_to_grid_value(canvas_x), snap_to_grid_value(canvas_y));
             break;
         case PendingPlacement::NONE:
             break;
@@ -203,8 +213,8 @@ void CircuitEditorMenu::start_drag(float mouse_x, float mouse_y) {
 }
 
 void CircuitEditorMenu::update_drag(float mouse_x, float mouse_y) {
-    float new_x = mouse_x - drag_offset_x;
-    float new_y = mouse_y - drag_offset_y;
+    float new_x = snap_to_grid_value(mouse_x - drag_offset_x);
+    float new_y = snap_to_grid_value(mouse_y - drag_offset_y);
 
     if (drag_target == DragTarget::GATE) {
         new_x = std::min(new_x, canvas_width() - GATE_WIDTH);
@@ -524,6 +534,9 @@ void CircuitEditorMenu::draw() const {
 }
 
 void CircuitEditorMenu::draw_grid() const {
+    if (!show_grid) {
+        return;
+    }
     float grid_top = TOOLBAR_HEIGHT;
     color grid_color = rgba_color(210, 210, 210, 255);
 

@@ -12,8 +12,11 @@ const float VERTICAL_GAP = 56.0f;
 
 const std::string FONT_STR = "JetBrainsMono-Regular";
 
-NewFileMenu::NewFileMenu(int window_width, int window_height)
-    : window_width(window_width), window_height(window_height) {}
+NewFileMenu::NewFileMenu(int window_width, int window_height, SettingsHandler& settings_handler)
+    : window_width(window_width),
+    window_height(window_height),
+    settings_handler(settings_handler)
+{}
 
 void NewFileMenu::on_enter(WindowHandler& win_handler, MenuHandler& main_handler) {
     window_handler = &win_handler;
@@ -46,7 +49,7 @@ void NewFileMenu::try_create_project() const {
     new_file_desc.clear();
     error_message.clear();
     menu_handler->push(
-        std::make_unique<CircuitEditorMenu>(std::move(created_circuit), window_handler->window_width, window_handler->window_height)
+        std::make_unique<CircuitEditorMenu>(std::move(created_circuit), window_handler->window_width, window_handler->window_height, settings_handler)
     );
 }
 

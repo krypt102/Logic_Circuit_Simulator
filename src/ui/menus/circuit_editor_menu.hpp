@@ -3,6 +3,7 @@
 
 #include "../../classes/Circuit.hpp"
 #include "../../classes/Menu.hpp"
+#include "../../handlers/settings_handler.hpp"
 #include "splashkit.h"
 
 enum class DragTarget {
@@ -32,7 +33,7 @@ struct WireEndpoint {
 
 class CircuitEditorMenu : public Menu {
 public:
-    CircuitEditorMenu(Circuit circuit, int window_width, int window_height);
+    CircuitEditorMenu(Circuit circuit, int window_width, int window_height, SettingsHandler& settings_handler);
 
     void on_enter(WindowHandler& window_handler, MenuHandler& menu_handler) override;
     void handle_input() override;
@@ -42,6 +43,11 @@ private:
     Circuit circuit;
     int window_width;
     int window_height;
+
+    SettingsHandler& settings_handler;
+
+    bool show_grid = true;
+    bool snap_to_grid = true;
 
     WindowHandler* window_handler = nullptr;
     MenuHandler* menu_handler = nullptr;
@@ -70,6 +76,7 @@ private:
     void try_remove_at(float mouse_x, float mouse_y);
 
     float canvas_width() const;
+    float snap_to_grid_value(float value) const;
 
     int gate_at(float x, float y) const;
     int input_pin_at(float x, float y) const;

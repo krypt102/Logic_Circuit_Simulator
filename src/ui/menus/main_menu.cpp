@@ -62,12 +62,12 @@ void MainMenu::draw() const {
     if (new_file_clicked) {
         play_sound_effect("ui_click");
         menu_handler->push(
-            std::make_unique<NewFileMenu>(window_handler->window_width, window_handler->window_height)
+            std::make_unique<NewFileMenu>(window_handler->window_width, window_handler->window_height, settings_handler)
         );
     } else if (load_file_clicked) {
         play_sound_effect("ui_click");
         menu_handler->push(
-            std::make_unique<LoadFileMenu>(window_handler->window_width, window_handler->window_height)
+            std::make_unique<LoadFileMenu>(window_handler->window_width, window_handler->window_height, settings_handler)
         );
     } else if (settings_btn_clicked) {
         play_sound_effect("ui_click");

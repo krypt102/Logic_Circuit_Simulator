@@ -4,10 +4,11 @@
 #include <string>
 #include <vector>
 #include "../../classes/Menu.hpp"
+#include "../../handlers/settings_handler.hpp"
 
 class LoadFileMenu : public Menu {
 public:
-    LoadFileMenu(int window_width, int window_height);
+    LoadFileMenu(int window_width, int window_height, SettingsHandler& settings_handler);
 
     void on_enter(WindowHandler& window_handler, MenuHandler& menu_handler) override;
     void handle_input() override;
@@ -17,6 +18,7 @@ private:
     int window_width;
     int window_height;
 
+    SettingsHandler& settings_handler;
     std::vector<std::string> save_file_names;
 
     mutable std::string error_message;

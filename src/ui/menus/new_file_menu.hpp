@@ -3,10 +3,11 @@
 
 #include <string>
 #include "../../classes/Menu.hpp"
+#include "../../handlers/settings_handler.hpp"
 
 class NewFileMenu : public Menu {
 public:
-    NewFileMenu(int window_width, int window_height);
+    NewFileMenu(int window_width, int window_height, SettingsHandler& settings_handler);
 
     void on_enter(WindowHandler& window_handler, MenuHandler& menu_handler) override;
     void handle_input() override;
@@ -15,6 +16,8 @@ public:
 private:
     int window_width;
     int window_height;
+
+    SettingsHandler& settings_handler;
 
     mutable std::string error_message;
     mutable std::string new_file_name;

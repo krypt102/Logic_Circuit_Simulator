@@ -21,12 +21,14 @@ const int DEFAULT_WIDTH = 1280;
 const int DEFAULT_HEIGHT = 720;
 const double DEFAULT_BG_VOL = 0.5;
 const bool DEFAULT_SHOW_GRID = true;
+const bool DEFAULT_SNAP_TO_GRID = true;
 
 const std::map<std::string, std::string> DEFAULT_SETTINGS = {
     {"screenWidth",  std::to_string(DEFAULT_WIDTH)},
     {"screenHeight", std::to_string(DEFAULT_HEIGHT)},
     {"bgVolume", std::to_string(DEFAULT_BG_VOL)},
     {"showGrid", DEFAULT_SHOW_GRID ? "true" : "false"},
+    {"snapToGrid", DEFAULT_SNAP_TO_GRID ? "true" : "false"},
 };
 
 enum settings_type {
@@ -41,6 +43,7 @@ const std::map<std::string, settings_type> VALID_SETTING_TYPES = {
     {"screenHeight", INT},
     {"bgVolume", DOUBLE},
     {"showGrid", BOOL},
+    {"snapToGrid", BOOL},
 };
 
 class invalid_setting_key {};

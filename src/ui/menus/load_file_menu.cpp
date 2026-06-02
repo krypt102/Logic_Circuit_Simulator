@@ -15,8 +15,11 @@ const float FILE_BUTTON_GAP = 12.0f;
 const float FILE_LIST_START_Y = 140.0f;
 const std::string LOAD_FONT_STR = "JetBrainsMono-Regular";
 
-LoadFileMenu::LoadFileMenu(int window_width, int window_height)
-    : window_width(window_width), window_height(window_height) {}
+LoadFileMenu::LoadFileMenu(int window_width, int window_height, SettingsHandler& settings_handler)
+    : window_width(window_width),
+    window_height(window_height),
+    settings_handler(settings_handler)
+{}
 
 void LoadFileMenu::on_enter(WindowHandler& win_handler, MenuHandler& main_handler) {
     window_handler = &win_handler;
@@ -59,7 +62,7 @@ void LoadFileMenu::open_circuit(const std::string& filename) const {
 
     print_info("LoadFileMenu: circuit loaded: " + loaded_circuit->circuit_name);
     menu_handler->push(
-        std::make_unique<CircuitEditorMenu>(std::move(*loaded_circuit), window_handler->window_width, window_handler->window_height)
+        std::make_unique<CircuitEditorMenu>(std::move(*loaded_circuit), window_handler->window_width, window_handler->window_height, settings_handler)
     );
 }
 
