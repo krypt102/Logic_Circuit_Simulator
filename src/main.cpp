@@ -34,7 +34,7 @@ int main() {
 
     print_info("Initialising menu system");
     MenuHandler menu_handler(window_handler);
-    menu_handler.push(std::make_unique<MainMenu>(window_handler.window_width, window_handler.window_height));
+    menu_handler.push(std::make_unique<MainMenu>(window_handler.window_width, window_handler.window_height, game_settings, sound_handler));
 
     print_info("Starting main game loop");
 

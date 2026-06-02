@@ -2,6 +2,7 @@
 
 #include "load_file_menu.hpp"
 #include "new_file_menu.hpp"
+#include "settings_menu.hpp"
 #include "splashkit.h"
 #include "../../handlers/menu_handler.hpp"
 #include "../../handlers/window_handler.hpp"
@@ -10,10 +11,13 @@ const float BUTTON_WIDTH = 280.0f;
 const float BUTTON_HEIGHT = 52.0f;
 const float BUTTON_GAP = 20.0f;
 
-MainMenu::MainMenu(int window_width, int window_height) {
+MainMenu::MainMenu(int window_width, int window_height, SettingsHandler& settings_handler, SoundHandler& sound_handler)
+    : window_width(window_width),
+      window_height(window_height),
+      settings_handler(settings_handler),
+      sound_handler(sound_handler)
+{
     print_info("Initialising main menu");
-    this->window_width  = window_width;
-    this->window_height = window_height;
 }
 
 void MainMenu::on_enter(WindowHandler &win_handler, MenuHandler& main_handler) {
@@ -34,7 +38,6 @@ void MainMenu::draw() const {
     float centre_x_position = (window_width  / 2.0f) - (BUTTON_WIDTH  / 2.0f);
     float start_y_position = (window_height / 2.0f) - (button_group_height  / 2.0f);
 
-    int button_font_size = 24;
     bool new_file_clicked = button("New File", rectangle_from(
         centre_x_position,
         start_y_position,
@@ -68,6 +71,8 @@ void MainMenu::draw() const {
         );
     } else if (settings_btn_clicked) {
         play_sound_effect("ui_click");
-        print_warning("Debug - Settings clicked;");
+        menu_handler->push(
+            std::make_unique<SettingsMenu>(window_handler->window_width, window_handler->window_height, settings_handler, sound_handler)
+        );
     }
 }

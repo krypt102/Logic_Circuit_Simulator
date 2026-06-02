@@ -10,7 +10,7 @@ namespace filesystem = std::filesystem;
 
 class SoundHandler {
 private:
-    vector<music> music_objects;
+    std::vector<music> music_objects;
 
 public:
     int init_sfx() {
@@ -68,6 +68,10 @@ public:
         for (const music &music_object : music_objects) {
             free_music(music_object);
         }
+    }
+
+    void set_bg_volume(double volume) const {
+        set_music_volume(volume);
     }
 };
 

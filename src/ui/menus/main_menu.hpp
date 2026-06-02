@@ -2,11 +2,12 @@
 #define LOGIC_CIRCUIT_SIMULATOR_MAIN_MENU_HPP
 
 #include "../../classes/Menu.hpp"
-#include "../../handlers/window_handler.hpp"
+#include "../../handlers/settings_handler.hpp"
+#include "../../handlers/sound_handler.hpp"
 
 class MainMenu : public Menu {
 public:
-    MainMenu(int window_width, int window_height);
+    MainMenu(int window_width, int window_height, SettingsHandler& settings_handler, SoundHandler& sound_handler);
 
     void on_enter(WindowHandler& window_handler, MenuHandler& menu_handler) override;
     void handle_input() override;
@@ -15,6 +16,9 @@ public:
 private:
     int window_width;
     int window_height;
+
+    SettingsHandler& settings_handler;
+    SoundHandler& sound_handler;
 
     WindowHandler* window_handler{};
     MenuHandler* menu_handler{};

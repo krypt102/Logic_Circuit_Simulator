@@ -548,8 +548,6 @@ void CircuitEditorMenu::handle_toolbar() {
     float save_button_x = canvas_width() - save_button_width - 12.0f;
     float save_button_y = (TOOLBAR_HEIGHT - save_button_height) / 2.0f;
 
-    set_interface_font(EDITOR_FONT);
-    set_interface_font_size(16);
     bool save_clicked = button("Save", rectangle_from(save_button_x, save_button_y, save_button_width, save_button_height));
     if (save_clicked) {
         play_sound_effect("ui_click");
@@ -579,9 +577,6 @@ void CircuitEditorMenu::draw_sidebar() const {
     float button_x = sidebar_x + SIDEBAR_PADDING;
     float button_width = SIDEBAR_WIDTH - SIDEBAR_PADDING * 2;
     float current_y = TOOLBAR_HEIGHT + SIDEBAR_PADDING;
-
-    set_interface_font(EDITOR_FONT);
-    set_interface_font_size(20);
 
     draw_text("GATES", COLOR_SECTION_LABEL, EDITOR_FONT, 12, button_x, current_y);
     current_y += 20.0f;

@@ -24,7 +24,6 @@ private:
     MenuHandler* menu_handler = nullptr;
 
     mutable float bg_volume;
-    mutable float sfx_volume;
     mutable bool show_grid;
 
     void apply_settings() const;
