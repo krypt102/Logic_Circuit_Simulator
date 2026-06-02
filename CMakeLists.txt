@@ -34,5 +34,7 @@ add_executable(Logic_Circuit_Simulator
         src/ui/menus/load_file_menu.cpp
         src/ui/menus/load_file_menu.hpp
         src/ui/menus/circuit_editor_menu.cpp
-        src/ui/menus/circuit_editor_menu.hpp)
+        src/ui/menus/circuit_editor_menu.hpp
+        src/ui/menus/settings_menu.cpp
+        src/ui/menus/settings_menu.hpp)
 target_link_libraries(Logic_Circuit_Simulator PRIVATE SplashKit)
