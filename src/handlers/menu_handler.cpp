@@ -24,10 +24,6 @@ void MenuHandler::update() const {
     }
 
     clear_screen(COLOR_WHITE);
-    if (menu->is_overlay && menus.size() >= 2) {
-        // Draw modals together with the current menu
-        menus[menus.size() - 2]->draw();
-    }
     menu->handle_input();
     menu->draw();
 }

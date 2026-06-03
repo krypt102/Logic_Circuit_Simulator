@@ -73,17 +73,8 @@ void MainMenu::draw() const {
         );
     } else if (settings_btn_clicked) {
         play_sound_effect("ui_click");
-        // menu_handler->push(
-        //     std::make_unique<SettingsMenu>(window_handler->window_width, window_handler->window_height, settings_handler, sound_handler)
-        // );
-
-        menu_handler->push(std::make_unique<Modal>(
-            "Test modal",
-            "This is a test?",
-            std::vector<ModalButton>{
-                {"Exit",   [this]() { menu_handler->pop(); menu_handler->pop(); }},
-                {"Cancel", [this]() { menu_handler->pop(); }}
-            }
-        ));
+        menu_handler->push(
+            std::make_unique<SettingsMenu>(window_handler->window_width, window_handler->window_height, settings_handler, sound_handler)
+        );
     }
 }
