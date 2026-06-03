@@ -64,6 +64,7 @@ private:
     WireEndpoint wire_start;
 
     mutable PendingPlacement pending_placement = PendingPlacement::NONE;
+    mutable int save_feedback_timer = 0;
 
     void handle_mouse();
     void handle_toolbar();

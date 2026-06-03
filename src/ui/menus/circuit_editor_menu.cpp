@@ -44,6 +44,8 @@ const color COLOR_SIDEBAR_BG = rgba_color(45, 45, 45, 255);
 const color COLOR_SECTION_LABEL = rgba_color(160, 160, 160, 255);
 const color COLOR_HINT_PLACEMENT = rgba_color(100, 180, 255, 255);
 
+const color COLOR_CIRCUIT_SAVE_MSG = rgba_color(46, 184, 97, 255);
+
 CircuitEditorMenu::CircuitEditorMenu(Circuit circuit, int window_width, int window_height, SettingsHandler& settings_handler)
     : circuit(std::move(circuit)),
       window_width(window_width),
@@ -73,6 +75,10 @@ float CircuitEditorMenu::snap_to_grid_value(float value) const {
 
 void CircuitEditorMenu::handle_input() {
     circuit.simulate();
+
+    if (save_feedback_timer > 0) {
+        save_feedback_timer--;
+    }
 
     handle_toolbar();
 
@@ -574,6 +580,7 @@ void CircuitEditorMenu::handle_toolbar() {
         bool saved = file_handler.save_circuit(circuit);
         if (saved) {
             print_info("Circuit saved from editor");
+            save_feedback_timer = 180;
         } else {
             print_error("Failed to save circuit from editor");
         }
@@ -646,6 +653,8 @@ void CircuitEditorMenu::draw_sidebar() const {
         draw_text("to place item", COLOR_HINT_PLACEMENT, EDITOR_FONT, 11, button_x, window_height - 42.0f);
         draw_text("Esc / R-click", COLOR_HINT_PLACEMENT, EDITOR_FONT, 11, button_x, window_height - 28.0f);
         draw_text("to cancel", COLOR_HINT_PLACEMENT, EDITOR_FONT, 11, button_x, window_height - 14.0f);
+    } else if (save_feedback_timer > 0) {
+        draw_text("Circuit saved!", COLOR_CIRCUIT_SAVE_MSG, EDITOR_FONT, 11, button_x, window_height - 28.0f);
     } else {
         draw_text("Shift+click a pin", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 28.0f);
         draw_text("to start a wire", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 14.0f);
