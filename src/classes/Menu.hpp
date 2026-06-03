@@ -12,8 +12,6 @@ public:
     virtual void handle_input() = 0;
     virtual void draw() const = 0;
 
-    bool is_overlay = false;
-
 protected:
     MenuHandler* menu_handler = nullptr;
 };
