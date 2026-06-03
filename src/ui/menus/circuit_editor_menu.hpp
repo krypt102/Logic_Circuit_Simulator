@@ -66,8 +66,17 @@ private:
     mutable PendingPlacement pending_placement = PendingPlacement::NONE;
     mutable int save_feedback_timer = 0;
 
+    bool panning = false;
+    float pan_offset_x = 0.0f;
+    float pan_offset_y = 0.0f;
+    float pan_start_mouse_x = 0.0f;
+    float pan_start_mouse_y = 0.0f;
+    float pan_start_offset_x = 0.0f;
+    float pan_start_offset_y = 0.0f;
+
     void handle_mouse();
     void handle_toolbar();
+    void handle_pan();
 
     void place_pending(float canvas_x, float canvas_y);
 
@@ -79,6 +88,7 @@ private:
 
     float canvas_width() const;
     float snap_to_grid_value(float value) const;
+    point_2d to_world_position(float screen_x, float screen_y) const;
 
     int gate_at(float x, float y) const;
     int input_pin_at(float x, float y) const;

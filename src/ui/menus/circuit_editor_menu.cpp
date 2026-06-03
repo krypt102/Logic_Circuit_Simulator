@@ -50,7 +50,9 @@ CircuitEditorMenu::CircuitEditorMenu(Circuit circuit, int window_width, int wind
     : circuit(std::move(circuit)),
       window_width(window_width),
       window_height(window_height),
-      settings_handler(settings_handler) {
+      settings_handler(settings_handler),
+      wire_start()
+{
     print_info("CircuitEditorMenu created for circuit: " + this->circuit.circuit_name);
 }
 
@@ -73,6 +75,30 @@ float CircuitEditorMenu::snap_to_grid_value(float value) const {
     return std::round(value / GRID_CELL_SIZE) * GRID_CELL_SIZE;
 }
 
+point_2d CircuitEditorMenu::to_world_position(float screen_x, float screen_y) const {
+    return {screen_x - pan_offset_x, screen_y - pan_offset_y};
+}
+
+void CircuitEditorMenu::handle_pan() {
+    float mouse_x = mouse_position().x;
+    float mouse_y = mouse_position().y;
+
+    if (mouse_down(MIDDLE_BUTTON)) {
+        if (!panning) {
+            panning = true;
+            pan_start_mouse_x = mouse_x;
+            pan_start_mouse_y = mouse_y;
+            pan_start_offset_x = pan_offset_x;
+            pan_start_offset_y = pan_offset_y;
+        } else {
+            pan_offset_x = pan_start_offset_x + (mouse_x - pan_start_mouse_x);
+            pan_offset_y = pan_start_offset_y + (mouse_y - pan_start_mouse_y);
+        }
+    } else {
+        panning = false;
+    }
+}
+
 void CircuitEditorMenu::handle_input() {
     circuit.simulate();
 
@@ -91,6 +117,7 @@ void CircuitEditorMenu::handle_input() {
         return;
     }
 
+    handle_pan();
     handle_mouse();
 }
 
@@ -101,38 +128,39 @@ void CircuitEditorMenu::handle_mouse() {
     bool in_toolbar = mouse_y < TOOLBAR_HEIGHT;
     bool in_sidebar = mouse_x >= canvas_width();
 
+    point_2d world_position = to_world_position(mouse_x, mouse_y);
+
     if (mouse_clicked(RIGHT_BUTTON) && !in_toolbar && !in_sidebar) {
         if (drawing_wire) {
             cancel_wire();
         } else if (pending_placement != PendingPlacement::NONE) {
             pending_placement = PendingPlacement::NONE;
         } else {
-            try_remove_at(mouse_x, mouse_y);
+            try_remove_at(world_position.x, world_position.y);
         }
         return;
     }
 
     if (mouse_clicked(LEFT_BUTTON) && !in_toolbar && !in_sidebar) {
         if (pending_placement != PendingPlacement::NONE) {
-            place_pending(mouse_x, mouse_y);
+            place_pending(world_position.x, world_position.y);
             return;
         }
 
         if (drawing_wire) {
-            finish_wire(mouse_x, mouse_y);
+            finish_wire(world_position.x, world_position.y);
             return;
         }
 
         bool shift_held = key_down(LEFT_SHIFT_KEY) || key_down(RIGHT_SHIFT_KEY);
-
         if (shift_held) {
             WireEndpoint clicked_pin;
-            if (connectable_pin_at(mouse_x, mouse_y, clicked_pin)) {
-                start_wire(mouse_x, mouse_y);
+            if (connectable_pin_at(world_position.x, world_position.y, clicked_pin)) {
+                start_wire(world_position.x, world_position.y);
                 return;
             }
         } else {
-            int hit_input = input_pin_at(mouse_x, mouse_y);
+            int hit_input = input_pin_at(world_position.x, world_position.y);
             if (hit_input != -1) {
                 circuit.toggle_input_pin(hit_input);
                 return;
@@ -144,7 +172,7 @@ void CircuitEditorMenu::handle_mouse() {
         mouse_left_just_pressed = true;
         bool no_pending = pending_placement == PendingPlacement::NONE;
         if (!in_toolbar && !in_sidebar && drag_target == DragTarget::NONE && !drawing_wire && no_pending) {
-            start_drag(mouse_x, mouse_y);
+            start_drag(world_position.x, world_position.y);
         }
     } else if (mouse_down(LEFT_BUTTON) && drag_target != DragTarget::NONE) {
         update_drag(mouse_x, mouse_y);
@@ -193,40 +221,41 @@ void CircuitEditorMenu::place_pending(float canvas_x, float canvas_y) {
     pending_placement = PendingPlacement::NONE;
 }
 
-void CircuitEditorMenu::start_drag(float mouse_x, float mouse_y) {
-    int hit_gate = gate_at(mouse_x, mouse_y);
+void CircuitEditorMenu::start_drag(float world_x, float world_y) {
+    int hit_gate = gate_at(world_x, world_y);
     if (hit_gate != -1) {
         Gate *gate = circuit.find_gate_with_id(hit_gate);
         drag_target = DragTarget::GATE;
         dragged_id = hit_gate;
-        drag_offset_x = mouse_x - gate->x_position;
-        drag_offset_y = mouse_y - gate->y_position;
+        drag_offset_x = world_x - gate->x_position;
+        drag_offset_y = world_y - gate->y_position;
         return;
     }
 
-    int hit_input = input_pin_at(mouse_x, mouse_y);
+    int hit_input = input_pin_at(world_x, world_y);
     if (hit_input != -1) {
         InputPin *pin = circuit.find_input_pin_by_id(hit_input);
         drag_target = DragTarget::INPUT_PIN;
         dragged_id = hit_input;
-        drag_offset_x = mouse_x - pin->x_position;
-        drag_offset_y = mouse_y - pin->y_position;
+        drag_offset_x = world_x - pin->x_position;
+        drag_offset_y = world_y - pin->y_position;
         return;
     }
 
-    int hit_output = output_pin_at(mouse_x, mouse_y);
+    int hit_output = output_pin_at(world_x, world_y);
     if (hit_output != -1) {
         OutputPin *pin = circuit.find_output_pin_by_id(hit_output);
         drag_target = DragTarget::OUTPUT_PIN;
         dragged_id = hit_output;
-        drag_offset_x = mouse_x - pin->x_position;
-        drag_offset_y = mouse_y - pin->y_position;
+        drag_offset_x = world_x - pin->x_position;
+        drag_offset_y = world_y - pin->y_position;
     }
 }
 
 void CircuitEditorMenu::update_drag(float mouse_x, float mouse_y) {
-    float new_x = snap_to_grid_value(mouse_x - drag_offset_x);
-    float new_y = snap_to_grid_value(mouse_y - drag_offset_y);
+    point_2d world = to_world_position(mouse_x, mouse_y);
+    float new_x = snap_to_grid_value(world.x - drag_offset_x);
+    float new_y = snap_to_grid_value(world.y - drag_offset_y);
 
     if (drag_target == DragTarget::GATE) {
         new_x = std::min(new_x, canvas_width() - GATE_WIDTH);
@@ -552,10 +581,13 @@ void CircuitEditorMenu::draw_grid() const {
     float grid_top = TOOLBAR_HEIGHT;
     color grid_color = rgba_color(210, 210, 210, 255);
 
-    for (int x = 0; x < (int)(canvas_width()); x += GRID_CELL_SIZE) {
+    float offset_x = std::fmod(pan_offset_x, GRID_CELL_SIZE);
+    float offset_y = std::fmod(pan_offset_y, GRID_CELL_SIZE);
+
+    for (float x = offset_x; x < canvas_width(); x += GRID_CELL_SIZE) {
         draw_line(grid_color, x, grid_top, x, window_height);
     }
-    for (int y = (int)(grid_top); y < window_height; y += GRID_CELL_SIZE) {
+    for (float y = grid_top + offset_y; y < window_height; y += GRID_CELL_SIZE) {
         draw_line(grid_color, 0, y, canvas_width(), y);
     }
 }
@@ -656,8 +688,10 @@ void CircuitEditorMenu::draw_sidebar() const {
     } else if (save_feedback_timer > 0) {
         draw_text("Circuit saved!", COLOR_CIRCUIT_SAVE_MSG, EDITOR_FONT, 11, button_x, window_height - 28.0f);
     } else {
-        draw_text("Shift+click a pin", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 28.0f);
-        draw_text("to start a wire", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 14.0f);
+        draw_text("Shift+click a pin", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 70.0f);
+        draw_text("to start a wire", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 56.0f);
+        draw_text("Middle mouse button", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 28.0f);
+        draw_text("to pan canvas", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 14.0f);
     }
 }
 
@@ -668,8 +702,8 @@ void CircuitEditorMenu::draw_gates() const {
 }
 
 void CircuitEditorMenu::draw_gate(const Gate &gate) const {
-    float gate_x_position = gate.x_position;
-    float gate_y_position = gate.y_position;
+    float gate_x_position = gate.x_position + pan_offset_x;
+    float gate_y_position = gate.y_position + pan_offset_y;
 
     bool is_dragged = (drag_target == DragTarget::GATE && dragged_id == gate.id);
     color body_color = is_dragged ? COLOR_GATE_DRAGGED : COLOR_GATE_BODY;
@@ -710,13 +744,16 @@ void CircuitEditorMenu::draw_input_pin(const InputPin &pin) const {
     bool is_dragged = (drag_target == DragTarget::INPUT_PIN && dragged_id == pin.id);
     color body_color = is_dragged ? COLOR_PIN_DRAGGED : (pin.value ? COLOR_PIN_HIGH : COLOR_PIN_LOW);
 
-    fill_circle(body_color, pin.x_position, pin.y_position, STANDALONE_PIN_RADIUS);
-    draw_circle(COLOR_PIN_OUTLINE, pin.x_position, pin.y_position, STANDALONE_PIN_RADIUS);
+    float screen_x = pin.x_position + pan_offset_x;
+    float screen_y = pin.y_position + pan_offset_y;
+
+    fill_circle(body_color, screen_x, screen_y, STANDALONE_PIN_RADIUS);
+    draw_circle(COLOR_PIN_OUTLINE, screen_x, screen_y, STANDALONE_PIN_RADIUS);
 
     std::string label = "IN";
     int font_size = 12;
-    float label_x = pin.x_position - (text_width(label, EDITOR_FONT, font_size) / 2.0f);
-    float label_y = pin.y_position + STANDALONE_PIN_RADIUS + 2.0f;
+    float label_x = screen_x - (text_width(label, EDITOR_FONT, font_size) / 2.0f);
+    float label_y = screen_y + STANDALONE_PIN_RADIUS + 2.0f;
     draw_text(label, COLOR_PIN_LABEL, EDITOR_FONT, font_size, label_x, label_y);
 }
 
@@ -730,13 +767,16 @@ void CircuitEditorMenu::draw_output_pin(const OutputPin &pin) const {
     bool is_dragged = (drag_target == DragTarget::OUTPUT_PIN && dragged_id == pin.id);
     color body_color = is_dragged ? COLOR_PIN_DRAGGED : (pin.value ? COLOR_PIN_HIGH : COLOR_PIN_LOW);
 
-    fill_circle(body_color, pin.x_position, pin.y_position, STANDALONE_PIN_RADIUS);
-    draw_circle(COLOR_PIN_OUTLINE, pin.x_position, pin.y_position, STANDALONE_PIN_RADIUS);
+    float screen_x = pin.x_position + pan_offset_x;
+    float screen_y = pin.y_position + pan_offset_y;
+
+    fill_circle(body_color, screen_x, screen_y, STANDALONE_PIN_RADIUS);
+    draw_circle(COLOR_PIN_OUTLINE, screen_x, screen_y, STANDALONE_PIN_RADIUS);
 
     std::string label = "OUT";
     int font_size = 12;
-    float label_x = pin.x_position - (text_width(label, EDITOR_FONT, font_size) / 2.0f);
-    float label_y = pin.y_position + STANDALONE_PIN_RADIUS + 2.0f;
+    float label_x = screen_x - (text_width(label, EDITOR_FONT, font_size) / 2.0f);
+    float label_y = screen_y + STANDALONE_PIN_RADIUS + 2.0f;
     draw_text(label, COLOR_PIN_LABEL, EDITOR_FONT, font_size, label_x, label_y);
 }
 
@@ -747,8 +787,13 @@ void CircuitEditorMenu::draw_wires() const {
 }
 
 void CircuitEditorMenu::draw_wire(const Wire &wire) const {
-    point_2d from_point = connection_point_for(wire.from_type, wire.from_id, wire.from_pin_id);
-    point_2d to_point = connection_point_for(wire.to_type, wire.to_id, wire.to_pin_id);
+    point_2d from_world = connection_point_for(wire.from_type, wire.from_id, wire.from_pin_id);
+    point_2d to_world = connection_point_for(wire.to_type, wire.to_id, wire.to_pin_id);
+
+    float from_start_x = from_world.x + pan_offset_x;
+    float from_start_y = from_world.y + pan_offset_y;
+    float to_start_x = to_world.x + pan_offset_x;
+    float to_start_y = to_world.y + pan_offset_y;
 
     bool wire_is_high = false;
 
@@ -780,17 +825,20 @@ void CircuitEditorMenu::draw_wire(const Wire &wire) const {
     }
 
     color wire_color = wire_is_high ? COLOR_WIRE_HIGH : COLOR_WIRE;
-    draw_line(wire_color, from_point.x, from_point.y, to_point.x, to_point.y, option_line_width(3));
+    draw_line(wire_color, from_start_x, from_start_y, to_start_x, to_start_y, option_line_width(3));
 }
 
 void CircuitEditorMenu::draw_wire_in_progress(float mouse_x, float mouse_y) const {
-    point_2d start_point = connection_point_for(
+    point_2d start_world = connection_point_for(
         wire_start.object_type,
         wire_start.object_id,
         wire_start.pin_id
     );
-    draw_line(COLOR_WIRE_IN_PROGRESS, start_point.x, start_point.y, mouse_x, mouse_y, option_line_width(3));
-    draw_circle(COLOR_WIRE_IN_PROGRESS, start_point.x, start_point.y, GATE_PIN_RADIUS + 2.0f);
+
+    float start_x = start_world.x + pan_offset_x;
+    float start_y = start_world.y + pan_offset_y;
+    draw_line(COLOR_WIRE_IN_PROGRESS, start_x, start_y, mouse_x, mouse_y, option_line_width(3));
+    draw_circle(COLOR_WIRE_IN_PROGRESS, start_x, start_y, GATE_PIN_RADIUS + 2.0f);
 }
 
 point_2d CircuitEditorMenu::connection_point_for(
