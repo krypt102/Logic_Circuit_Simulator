@@ -21,6 +21,7 @@ enum class PendingPlacement {
     GATE_NAND,
     GATE_NOR,
     GATE_XOR,
+    GATE_XNOR,
     INPUT_PIN,
     OUTPUT_PIN
 };

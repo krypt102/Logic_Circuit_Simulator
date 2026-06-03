@@ -217,6 +217,8 @@ private:
             gate.output_pins[0].value = !(first_input_value || second_input_value);
         } else if (gate.gate_type == GateType::XOR) {
             gate.output_pins[0].value = first_input_value != second_input_value;
+        } else if (gate.gate_type == GateType::XNOR) {
+            gate.output_pins[0].value = first_input_value == second_input_value;
         }
     }
 

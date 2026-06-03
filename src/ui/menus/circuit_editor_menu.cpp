@@ -1,4 +1,7 @@
 #include "circuit_editor_menu.hpp"
+
+#include <format>
+
 #include "../../handlers/menu_handler.hpp"
 #include "../../utils/terminal_utils.h"
 #include "../../handlers/circuit_file_handler.hpp"
@@ -168,6 +171,9 @@ void CircuitEditorMenu::place_pending(float canvas_x, float canvas_y) {
             break;
         case PendingPlacement::GATE_XOR:
             circuit.add_gate(GateType::XOR, snap_to_grid_value(canvas_x - GATE_WIDTH / 2.0f), snap_to_grid_value(canvas_y - GATE_HEIGHT / 2.0f));
+            break;
+        case PendingPlacement::GATE_XNOR:
+            circuit.add_gate(GateType::XNOR, snap_to_grid_value(canvas_x - GATE_WIDTH / 2.0f), snap_to_grid_value(canvas_y - GATE_HEIGHT / 2.0f));
             break;
         case PendingPlacement::INPUT_PIN:
             circuit.add_input_pin(snap_to_grid_value(canvas_x), snap_to_grid_value(canvas_y));
@@ -595,12 +601,13 @@ void CircuitEditorMenu::draw_sidebar() const {
     current_y += 20.0f;
 
     const std::vector<std::pair<std::string, PendingPlacement>> gate_buttons = {
-        {"AND",  PendingPlacement::GATE_AND},
-        {"OR",   PendingPlacement::GATE_OR},
-        {"NOT",  PendingPlacement::GATE_NOT},
+        {"AND", PendingPlacement::GATE_AND},
+        {"OR", PendingPlacement::GATE_OR},
+        {"NOT", PendingPlacement::GATE_NOT},
         {"NAND", PendingPlacement::GATE_NAND},
-        {"NOR",  PendingPlacement::GATE_NOR},
-        {"XOR",  PendingPlacement::GATE_XOR}
+        {"NOR", PendingPlacement::GATE_NOR},
+        {"XOR", PendingPlacement::GATE_XOR},
+        {"XNOR", PendingPlacement::GATE_XNOR}
     };
 
     for (const auto &[label, placement] : gate_buttons) {
@@ -635,13 +642,13 @@ void CircuitEditorMenu::draw_sidebar() const {
         draw_text("Esc / R-click", COLOR_WIRE_IN_PROGRESS, EDITOR_FONT, 11, button_x, window_height - 28.0f);
         draw_text("to cancel", COLOR_WIRE_IN_PROGRESS, EDITOR_FONT, 11, button_x, window_height - 14.0f);
     } else if (pending_placement != PendingPlacement::NONE) {
-        draw_text("Click the canvas", COLOR_HINT_PLACEMENT, EDITOR_FONT, 11, button_x, window_height - 42.0f);
-        draw_text("to place item", COLOR_HINT_PLACEMENT, EDITOR_FONT, 11, button_x, window_height - 28.0f);
-        draw_text("Esc / R-click", COLOR_HINT_PLACEMENT, EDITOR_FONT, 11, button_x, window_height - 14.0f);
+        draw_text("Click the canvas", COLOR_HINT_PLACEMENT, EDITOR_FONT, 11, button_x, window_height - 56.0f);
+        draw_text("to place item", COLOR_HINT_PLACEMENT, EDITOR_FONT, 11, button_x, window_height - 42.0f);
+        draw_text("Esc / R-click", COLOR_HINT_PLACEMENT, EDITOR_FONT, 11, button_x, window_height - 28.0f);
+        draw_text("to cancel", COLOR_HINT_PLACEMENT, EDITOR_FONT, 11, button_x, window_height - 14.0f);
     } else {
-        draw_text("Shift+click a pin", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 42.0f);
-        draw_text("to start a wire", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 28.0f);
-        draw_text("Click IN to toggle", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 14.0f);
+        draw_text("Shift+click a pin", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 28.0f);
+        draw_text("to start a wire", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 14.0f);
     }
 }
 

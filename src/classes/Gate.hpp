@@ -11,7 +11,8 @@ enum class GateType {
     NOT,
     NAND,
     NOR,
-    XOR
+    XOR,
+    XNOR
 };
 
 std::string gate_type_to_string(GateType type);

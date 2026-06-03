@@ -314,6 +314,10 @@ bool CircuitFileHandler::string_to_gate_type(const std::string& str, GateType& o
         out_type = GateType::XOR;
         return true;
     }
+    if (str == "XNOR") {
+        out_type = GateType::XNOR;
+        return true;
+    }
     return false;
 }
 

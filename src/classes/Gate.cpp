@@ -14,6 +14,8 @@ std::string gate_type_to_string(GateType type) {
             return "NOR";
         case GateType::XOR:
             return "XOR";
+        case GateType::XNOR:
+            return "XNOR";
     }
     return "UNKNOWN";
 }
