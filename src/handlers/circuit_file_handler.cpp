@@ -256,6 +256,17 @@ bool CircuitFileHandler::save_exists(const std::string& filename) {
     return std::filesystem::exists(build_file_path(filename));
 }
 
+bool CircuitFileHandler::delete_circuit(const std::string& filename) {
+    std::string file_path = build_file_path(filename);
+    if (!std::filesystem::exists(file_path)) {
+        print_error("Cannot delete circuit, file not found: " + file_path);
+        return false;
+    }
+    std::filesystem::remove(file_path);
+    print_info("Deleted circuit: " + file_path);
+    return true;
+}
+
 std::string CircuitFileHandler::build_file_path(const std::string& filename) {
     return SAVES_FOLDER + "/" + filename + CIRCUIT_FILE_EXTENSION;
 }

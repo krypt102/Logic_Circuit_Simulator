@@ -12,6 +12,7 @@ class CircuitFileHandler {
 public:
     bool save_circuit(const Circuit& circuit);
     bool save_exists(const std::string& filename);
+    bool delete_circuit(const std::string& filename);
 
     std::optional<Circuit> load_circuit(const std::string& filename);
 

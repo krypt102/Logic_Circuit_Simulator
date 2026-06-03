@@ -3,16 +3,19 @@
 #include "../../handlers/circuit_file_handler.hpp"
 #include "../../utils/terminal_utils.h"
 #include "../components/BackButton.hpp"
+#include "../components/Modal.hpp"
 #include "splashkit.h"
 
 #include <filesystem>
 
 #include "circuit_editor_menu.hpp"
 
-const float FILE_BUTTON_WIDTH  = 440.0f;
+const float FILE_BUTTON_WIDTH  = 380.0f;
 const float FILE_BUTTON_HEIGHT = 48.0f;
 const float FILE_BUTTON_GAP = 12.0f;
 const float FILE_LIST_START_Y = 140.0f;
+const float DELETE_BUTTON_WIDTH = 48.0f;
+const float DELETE_BUTTON_GAP = 8.0f;
 const std::string LOAD_FONT_STR = "JetBrainsMono-Regular";
 
 LoadFileMenu::LoadFileMenu(int window_width, int window_height, SettingsHandler& settings_handler)
@@ -25,10 +28,11 @@ void LoadFileMenu::on_enter(WindowHandler& win_handler, MenuHandler& main_handle
     window_handler = &win_handler;
     menu_handler = &main_handler;
     error_message.clear();
-    load_save_file_names();
+    pending_delete_name.clear();
+    refresh_file_names();
 }
 
-void LoadFileMenu::load_save_file_names() {
+void LoadFileMenu::refresh_file_names() {
     save_file_names.clear();
 
     if (!std::filesystem::exists(SAVES_FOLDER)) {
@@ -44,7 +48,7 @@ void LoadFileMenu::load_save_file_names() {
         if (
             filename.size() > CIRCUIT_FILE_EXTENSION.size() &&
             filename.substr(filename.size() - CIRCUIT_FILE_EXTENSION.size()) == CIRCUIT_FILE_EXTENSION
-    ) {
+        ) {
             save_file_names.push_back(filename.substr(0, filename.size() - CIRCUIT_FILE_EXTENSION.size()));
         }
     }
@@ -66,7 +70,37 @@ void LoadFileMenu::open_circuit(const std::string& filename) const {
     );
 }
 
-void LoadFileMenu::handle_input() {}
+void LoadFileMenu::confirm_delete(const std::string& filename) {
+    std::vector<ModalButton> modal_buttons;
+
+    modal_buttons.push_back({"Delete", [this, filename]() {
+        CircuitFileHandler file_handler;
+        if (file_handler.delete_circuit(filename)) {
+            refresh_file_names();
+        } else {
+            error_message = "Failed to delete '" + filename + "'.";
+        }
+        menu_handler->pop();
+    }});
+
+    modal_buttons.push_back({"Cancel", [this]() {
+        menu_handler->pop();
+    }});
+
+    menu_handler->push(std::make_unique<Modal>(
+        "Delete Circuit",
+        "Delete '" + filename + "'? This cannot be undone.",
+        std::move(modal_buttons)
+    ));
+}
+
+void LoadFileMenu::handle_input() {
+    if (!pending_delete_name.empty()) {
+        std::string name = pending_delete_name;
+        pending_delete_name.clear();
+        confirm_delete(name);
+    }
+}
 
 void LoadFileMenu::draw() const {
     bool has_clicked_back = draw_back_button();
@@ -88,13 +122,14 @@ void LoadFileMenu::draw() const {
         return;
     }
 
-    float button_x = (window_width / 2.0f) - (FILE_BUTTON_WIDTH / 2.0f);
+    float row_total_width = FILE_BUTTON_WIDTH + DELETE_BUTTON_GAP + DELETE_BUTTON_WIDTH;
+    float row_x = (window_width / 2.0f) - (row_total_width / 2.0f);
 
     for (int i = 0; i < (int)(save_file_names.size()); i++) {
         float button_y = FILE_LIST_START_Y + i * (FILE_BUTTON_HEIGHT + FILE_BUTTON_GAP);
 
         bool clicked = button(save_file_names[i], rectangle_from(
-            button_x,
+            row_x,
             button_y,
             FILE_BUTTON_WIDTH,
             FILE_BUTTON_HEIGHT
@@ -103,6 +138,20 @@ void LoadFileMenu::draw() const {
         if (clicked) {
             play_sound_effect("ui_click");
             open_circuit(save_file_names[i]);
+            return;
+        }
+
+        float delete_x = row_x + FILE_BUTTON_WIDTH + DELETE_BUTTON_GAP;
+        bool delete_clicked = button("X", rectangle_from(
+            delete_x,
+            button_y,
+            DELETE_BUTTON_WIDTH,
+            FILE_BUTTON_HEIGHT
+        ));
+
+        if (delete_clicked) {
+            play_sound_effect("ui_click");
+            pending_delete_name = save_file_names[i];
             return;
         }
     }

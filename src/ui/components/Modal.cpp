@@ -21,9 +21,7 @@ Modal::Modal(std::string title, std::string message, std::vector<ModalButton> bu
     : title(std::move(title)),
       message(std::move(message)),
       buttons(std::move(buttons))
-{
-    is_overlay = true;
-}
+{}
 
 void Modal::on_enter(WindowHandler& win_handler, MenuHandler& main_handler) {
     window_handler = &win_handler;
@@ -72,6 +70,7 @@ void Modal::draw() const {
         rectangle btn_rect = rectangle_from(button_x, buttons_y, button_width, MODAL_BUTTON_HEIGHT);
         bool clicked = button(buttons[i].label, btn_rect);
         if (clicked) {
+            play_sound_effect("ui_click");
             buttons[i].on_click();
         }
         button_x += button_width + MODAL_BUTTON_GAP;
