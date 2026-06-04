@@ -1,6 +1,7 @@
 #include "Modal.hpp"
 #include "../../handlers/menu_handler.hpp"
 #include "splashkit.h"
+#include "UniqueButton.hpp"
 
 const float MODAL_MIN_WIDTH = 480.0f;
 const float MODAL_PADDING = 32.0f;
@@ -101,7 +102,7 @@ void Modal::draw() const {
 
     for (int i = 0; i < (int)(buttons.size()); i++) {
         rectangle btn_rect = rectangle_from(button_x, buttons_y, button_width, MODAL_BUTTON_HEIGHT);
-        bool clicked = button(buttons[i].label, btn_rect);
+        bool clicked = unique_button(buttons[i].label, btn_rect);
         if (clicked) {
             play_sound_effect("ui_click");
             buttons[i].on_click();

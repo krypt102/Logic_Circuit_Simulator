@@ -1,5 +1,6 @@
 #include "menu_handler.hpp"
 #include "splashkit.h"
+#include "../ui/components/UniqueButton.hpp"
 
 void MenuHandler::push(std::unique_ptr<Menu> menu) {
     Menu* raw = menu.get();
@@ -18,6 +19,8 @@ void MenuHandler::pop() {
 }
 
 void MenuHandler::update() const {
+    reset_button_counter();
+
     Menu* menu = current_menu();
     if (!menu) {
         return;

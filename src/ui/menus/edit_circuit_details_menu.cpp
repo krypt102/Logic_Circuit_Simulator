@@ -3,6 +3,7 @@
 #include "../../handlers/circuit_file_handler.hpp"
 #include "../../utils/terminal_utils.h"
 #include "../components/BackButton.hpp"
+#include "../components/UniqueButton.hpp"
 #include "splashkit.h"
 
 const std::string EDIT_FONT = "JetBrainsMono-Regular";
@@ -96,13 +97,13 @@ void EditCircuitDetailsMenu::draw() const {
     float buttons_total_width = EDIT_BUTTON_WIDTH * 2 + EDIT_BUTTON_GAP;
     float buttons_x = (window_width / 2.0f) - (buttons_total_width / 2.0f);
 
-    bool save_clicked = button("Save", rectangle_from(buttons_x, current_y, EDIT_BUTTON_WIDTH, EDIT_BUTTON_HEIGHT));
+    bool save_clicked = unique_button("Save", rectangle_from(buttons_x, current_y, EDIT_BUTTON_WIDTH, EDIT_BUTTON_HEIGHT));
     if (save_clicked) {
         play_sound_effect("ui_click");
         pending_save = true;
     }
 
-    bool cancel_clicked = button("Cancel", rectangle_from(buttons_x + EDIT_BUTTON_WIDTH + EDIT_BUTTON_GAP, current_y, EDIT_BUTTON_WIDTH, EDIT_BUTTON_HEIGHT));
+    bool cancel_clicked = unique_button("Cancel", rectangle_from(buttons_x + EDIT_BUTTON_WIDTH + EDIT_BUTTON_GAP, current_y, EDIT_BUTTON_WIDTH, EDIT_BUTTON_HEIGHT));
     if (cancel_clicked) {
         play_sound_effect("ui_click");
         pending_cancel = true;

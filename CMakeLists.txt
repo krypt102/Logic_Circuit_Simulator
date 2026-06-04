@@ -40,5 +40,7 @@ add_executable(Logic_Circuit_Simulator
         src/ui/components/Modal.cpp
         src/ui/components/Modal.hpp
         src/ui/menus/edit_circuit_details_menu.cpp
-        src/ui/menus/edit_circuit_details_menu.hpp)
+        src/ui/menus/edit_circuit_details_menu.hpp
+        src/ui/components/UniqueButton.cpp
+        src/ui/components/UniqueButton.hpp)
 target_link_libraries(Logic_Circuit_Simulator PRIVATE SplashKit)

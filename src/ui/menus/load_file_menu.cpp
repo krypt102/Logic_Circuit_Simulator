@@ -4,6 +4,7 @@
 #include "../../utils/terminal_utils.h"
 #include "../components/BackButton.hpp"
 #include "../components/Modal.hpp"
+#include "../components/UniqueButton.hpp"
 #include "splashkit.h"
 
 #include <filesystem>
@@ -169,7 +170,7 @@ void LoadFileMenu::draw() const {
     for (int i = 0; i < (int)(save_file_names.size()); i++) {
         float button_y = FILE_LIST_START_Y + i * (FILE_BUTTON_HEIGHT + FILE_BUTTON_GAP);
 
-        bool clicked = button(save_file_names[i], rectangle_from(
+        bool clicked = unique_button(save_file_names[i], rectangle_from(
             row_x,
             button_y,
             FILE_BUTTON_WIDTH,
@@ -183,7 +184,7 @@ void LoadFileMenu::draw() const {
         }
 
         float edit_x = row_x + FILE_BUTTON_WIDTH + DELETE_BUTTON_GAP;
-        bool edit_clicked = button("Edit", rectangle_from(
+        bool edit_clicked = unique_button("Edit", rectangle_from(
             edit_x,
             button_y,
             EDIT_BTN_WIDTH,
@@ -197,7 +198,7 @@ void LoadFileMenu::draw() const {
         }
 
         float delete_x = edit_x + EDIT_BTN_WIDTH + DELETE_BUTTON_GAP;
-        bool delete_clicked = button("X", rectangle_from(
+        bool delete_clicked = unique_button("X", rectangle_from(
             delete_x,
             button_y,
             DELETE_BUTTON_WIDTH,

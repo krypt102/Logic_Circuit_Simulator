@@ -5,6 +5,7 @@
 #include "../../handlers/circuit_file_handler.hpp"
 #include "splashkit.h"
 #include "../components/BackButton.hpp"
+#include "../components/UniqueButton.hpp"
 
 const float FORM_WIDTH = 440.0f;
 const float FORM_HEIGHT = 40.0f;
@@ -91,7 +92,7 @@ void NewFileMenu::draw() const {
     float title_x_position = (window_width / 2.0f) - (text_width(title_text, FONT_STR, title_font_size) / 2.0f);
     draw_text(title_text, COLOR_BLACK, FONT_STR, title_font_size, title_x_position, 60.0f);
 
-    bool create_button_pressed = button("Create file", rectangle_from(
+    bool create_button_pressed = unique_button("Create file", rectangle_from(
         last_text_box_x_position + (FORM_WIDTH / 2.0f / 2.0f),
         last_text_box_y_position + VERTICAL_GAP,
         FORM_WIDTH / 2.0f,

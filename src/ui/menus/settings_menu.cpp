@@ -1,6 +1,7 @@
 #include "settings_menu.hpp"
 #include "../../handlers/menu_handler.hpp"
 #include "../components/BackButton.hpp"
+#include "../components/UniqueButton.hpp"
 #include "splashkit.h"
 
 const std::string SETTINGS_FONT = "JetBrainsMono-Regular";
@@ -83,7 +84,7 @@ void SettingsMenu::draw() const {
     float apply_button_height = 44.0f;
     float apply_x = (window_width / 2.0f) - (apply_button_width / 2.0f);
 
-    bool apply_clicked = button("Apply", rectangle_from(apply_x, row_y, apply_button_width, apply_button_height));
+    bool apply_clicked = unique_button("Apply", rectangle_from(apply_x, row_y, apply_button_width, apply_button_height));
     if (apply_clicked) {
         play_sound_effect("ui_click");
         apply_settings();

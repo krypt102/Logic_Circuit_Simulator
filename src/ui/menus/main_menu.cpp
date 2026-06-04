@@ -7,6 +7,7 @@
 #include "../../handlers/menu_handler.hpp"
 #include "../../handlers/window_handler.hpp"
 #include "../components/Modal.hpp"
+#include "../components/UniqueButton.hpp"
 
 struct ModalButton;
 const float BUTTON_WIDTH = 280.0f;
@@ -40,21 +41,21 @@ void MainMenu::draw() const {
     float centre_x_position = (window_width  / 2.0f) - (BUTTON_WIDTH  / 2.0f);
     float start_y_position = (window_height / 2.0f) - (button_group_height  / 2.0f);
 
-    bool new_file_clicked = button("New File", rectangle_from(
+    bool new_file_clicked = unique_button("New File", rectangle_from(
         centre_x_position,
         start_y_position,
         BUTTON_WIDTH,
         BUTTON_HEIGHT
     ));
 
-    bool load_file_clicked = button("Load File", rectangle_from(
+    bool load_file_clicked = unique_button("Load File", rectangle_from(
         centre_x_position,
         start_y_position + BUTTON_HEIGHT + BUTTON_GAP,
         BUTTON_WIDTH,
         BUTTON_HEIGHT
     ));
 
-    bool settings_btn_clicked = button("Settings", rectangle_from(
+    bool settings_btn_clicked = unique_button("Settings", rectangle_from(
         centre_x_position,
         start_y_position + (2 * (BUTTON_HEIGHT + BUTTON_GAP)),
         BUTTON_WIDTH,

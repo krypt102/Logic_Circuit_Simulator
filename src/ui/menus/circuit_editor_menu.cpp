@@ -7,6 +7,7 @@
 #include "../../utils/terminal_utils.h"
 #include "../../handlers/circuit_file_handler.hpp"
 #include "../components/BackButton.hpp"
+#include "../components/UniqueButton.hpp"
 #include "splashkit.h"
 
 const int GRID_CELL_SIZE = 32;
@@ -610,7 +611,7 @@ void CircuitEditorMenu::handle_toolbar() {
     float save_button_x = canvas_width() - save_button_width - 12.0f;
     float edit_button_x = save_button_x - edit_button_width - 8.0f;
 
-    bool save_clicked = button("Save", rectangle_from(save_button_x, button_y, save_button_width, button_height));
+    bool save_clicked = unique_button("Save", rectangle_from(save_button_x, button_y, save_button_width, button_height));
     if (save_clicked) {
         play_sound_effect("ui_click");
         CircuitFileHandler file_handler;
@@ -623,7 +624,7 @@ void CircuitEditorMenu::handle_toolbar() {
         }
     }
 
-    bool edit_clicked = button("Edit", rectangle_from(edit_button_x, button_y, edit_button_width, button_height));
+    bool edit_clicked = unique_button("Edit", rectangle_from(edit_button_x, button_y, edit_button_width, button_height));
     if (edit_clicked) {
         play_sound_effect("ui_click");
         menu_handler->push(std::make_unique<EditCircuitDetailsMenu>(
@@ -682,7 +683,7 @@ void CircuitEditorMenu::draw_sidebar() const {
     };
 
     for (const auto &[label, placement] : gate_buttons) {
-        bool clicked = button(label, rectangle_from(button_x, current_y, button_width, SIDEBAR_BUTTON_HEIGHT));
+        bool clicked = unique_button(label, rectangle_from(button_x, current_y, button_width, SIDEBAR_BUTTON_HEIGHT));
         if (clicked) {
             play_sound_effect("ui_click");
             pending_placement = placement;
@@ -694,14 +695,14 @@ void CircuitEditorMenu::draw_sidebar() const {
     draw_text("PINS", COLOR_SECTION_LABEL, EDITOR_FONT, 12, button_x, current_y);
     current_y += 20.0f;
 
-    bool input_clicked = button("Input Pin", rectangle_from(button_x, current_y, button_width, SIDEBAR_BUTTON_HEIGHT));
+    bool input_clicked = unique_button("Input Pin", rectangle_from(button_x, current_y, button_width, SIDEBAR_BUTTON_HEIGHT));
     if (input_clicked) {
         play_sound_effect("ui_click");
         pending_placement = PendingPlacement::INPUT_PIN;
     }
     current_y += SIDEBAR_BUTTON_HEIGHT + SIDEBAR_BUTTON_GAP;
 
-    bool output_clicked = button("Output Pin", rectangle_from(button_x, current_y, button_width, SIDEBAR_BUTTON_HEIGHT));
+    bool output_clicked = unique_button("Output Pin", rectangle_from(button_x, current_y, button_width, SIDEBAR_BUTTON_HEIGHT));
     if (output_clicked) {
         play_sound_effect("ui_click");
         pending_placement = PendingPlacement::OUTPUT_PIN;
