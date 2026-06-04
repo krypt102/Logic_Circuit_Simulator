@@ -59,6 +59,7 @@ void EditCircuitDetailsMenu::handle_input() {
         }
 
         on_save(name_value, description_value);
+        play_sound_effect("click_success");
         menu_handler->pop();
         return;
     }

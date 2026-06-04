@@ -170,6 +170,7 @@ void CircuitEditorMenu::handle_mouse() {
             int hit_input = input_pin_at(world_position.x, world_position.y);
             if (hit_input != -1) {
                 circuit.toggle_input_pin(hit_input);
+                play_sound_effect("click_success");
                 return;
             }
         }
@@ -225,6 +226,7 @@ void CircuitEditorMenu::place_pending(float canvas_x, float canvas_y) {
         case PendingPlacement::NONE:
             break;
     }
+    play_sound_effect("click_success");
     pending_placement = PendingPlacement::NONE;
 }
 
@@ -329,12 +331,15 @@ void CircuitEditorMenu::finish_wire(float mouse_x, float mouse_y) {
         ending_source.object_type, ending_source.object_id, ending_source.pin_id
     );
 
+    play_sound_effect("click_success");
+
     print_info("Wire added");
     drawing_wire = false;
 }
 
 void CircuitEditorMenu::cancel_wire() {
     drawing_wire = false;
+    play_sound_effect("click_success");
     print_info("Wire drawing cancelled");
 }
 
@@ -425,18 +430,21 @@ void CircuitEditorMenu::try_remove_at(float mouse_x, float mouse_y) {
     int hit_gate = gate_at(mouse_x, mouse_y);
     if (hit_gate != -1) {
         circuit.remove_gate(hit_gate);
+        play_sound_effect("click_success");
         return;
     }
 
     int hit_input = input_pin_at(mouse_x, mouse_y);
     if (hit_input != -1) {
         circuit.remove_input_pin(hit_input);
+        play_sound_effect("click_success");
         return;
     }
 
     int hit_output = output_pin_at(mouse_x, mouse_y);
     if (hit_output != -1) {
         circuit.remove_output_pin(hit_output);
+        play_sound_effect("click_success");
         return;
     }
 

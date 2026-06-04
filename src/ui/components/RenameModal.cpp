@@ -75,6 +75,7 @@ void RenameModal::draw() const {
     if (confirm_clicked) {
         play_sound_effect("ui_click");
         on_confirm(current_value);
+        play_sound_effect("click_success");
         menu_handler->pop();
     } else if (cancel_clicked) {
         play_sound_effect("ui_click");
