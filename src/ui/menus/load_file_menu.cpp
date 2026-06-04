@@ -1,4 +1,7 @@
 #include "load_file_menu.hpp"
+
+#include <algorithm>
+
 #include "../../handlers/menu_handler.hpp"
 #include "../../handlers/circuit_file_handler.hpp"
 #include "../../utils/terminal_utils.h"
@@ -56,6 +59,7 @@ void LoadFileMenu::refresh_file_names() {
             save_file_names.push_back(filename.substr(0, filename.size() - CIRCUIT_FILE_EXTENSION.size()));
         }
     }
+    std::sort(save_file_names.begin(), save_file_names.end());
 }
 
 void LoadFileMenu::open_circuit(const std::string& filename) const {
