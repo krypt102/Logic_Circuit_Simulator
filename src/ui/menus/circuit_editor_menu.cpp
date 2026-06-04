@@ -689,6 +689,9 @@ void CircuitEditorMenu::handle_toolbar() {
             circuit.circuit_name,
             [this](const std::string& new_name, const std::string& new_desc) {
                 CircuitFileHandler file_handler;
+                if (new_name != circuit.circuit_name && file_handler.save_exists(new_name)) {
+                    return;
+                }
                 if (circuit.circuit_name != new_name) {
                     file_handler.delete_circuit(circuit.circuit_name);
                 }
