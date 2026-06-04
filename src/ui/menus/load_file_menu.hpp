@@ -25,11 +25,13 @@ private:
 
     mutable std::string error_message;
     mutable std::string pending_delete_name;
+    mutable std::string pending_edit_name;
 
     WindowHandler* window_handler = nullptr;
 
     void open_circuit(const std::string& filename) const;
     void confirm_delete(const std::string& filename);
+    void open_edit(const std::string& filename);
 };
 
 #endif //LOGIC_CIRCUIT_SIMULATOR_LOAD_FILE_MENU_HPP

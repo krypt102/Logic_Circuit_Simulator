@@ -9,13 +9,15 @@
 #include <filesystem>
 
 #include "circuit_editor_menu.hpp"
+#include "edit_circuit_details_menu.hpp"
 
-const float FILE_BUTTON_WIDTH  = 380.0f;
+const float FILE_BUTTON_WIDTH  = 300.0f;
 const float FILE_BUTTON_HEIGHT = 48.0f;
 const float FILE_BUTTON_GAP = 12.0f;
 const float FILE_LIST_START_Y = 140.0f;
 const float DELETE_BUTTON_WIDTH = 48.0f;
 const float DELETE_BUTTON_GAP = 8.0f;
+const float EDIT_BTN_WIDTH = 60.0f;
 const std::string LOAD_FONT_STR = "JetBrainsMono-Regular";
 
 LoadFileMenu::LoadFileMenu(int window_width, int window_height, SettingsHandler& settings_handler)
@@ -29,6 +31,7 @@ void LoadFileMenu::on_enter(WindowHandler& win_handler, MenuHandler& main_handle
     menu_handler = &main_handler;
     error_message.clear();
     pending_delete_name.clear();
+    pending_edit_name.clear();
     refresh_file_names();
 }
 
@@ -94,11 +97,49 @@ void LoadFileMenu::confirm_delete(const std::string& filename) {
     ));
 }
 
+void LoadFileMenu::open_edit(const std::string& filename) {
+    CircuitFileHandler file_handler;
+    std::optional<Circuit> loaded = file_handler.load_circuit(filename);
+
+    if (!loaded.has_value()) {
+        error_message = "Failed to load '" + filename + "'.";
+        return;
+    }
+
+    menu_handler->push(std::make_unique<EditCircuitDetailsMenu>(
+        loaded->circuit_name,
+        loaded->circuit_description,
+        filename,
+        [this, filename](const std::string& new_name, const std::string& new_desc) {
+            CircuitFileHandler circuit_file_handler;
+            std::optional<Circuit> loaded_circuit = circuit_file_handler.load_circuit(filename);
+            if (!loaded_circuit.has_value()) {
+                error_message = "Failed to update '" + filename + "'.";
+                return;
+            }
+            if (new_name != filename) {
+                circuit_file_handler.delete_circuit(filename);
+            }
+            loaded_circuit->circuit_name = new_name;
+            loaded_circuit->circuit_description = new_desc;
+            circuit_file_handler.save_circuit(*loaded_circuit);
+            refresh_file_names();
+        }
+    ));
+}
+
 void LoadFileMenu::handle_input() {
     if (!pending_delete_name.empty()) {
         std::string name = pending_delete_name;
         pending_delete_name.clear();
         confirm_delete(name);
+        return;
+    }
+
+    if (!pending_edit_name.empty()) {
+        std::string name = pending_edit_name;
+        pending_edit_name.clear();
+        open_edit(name);
     }
 }
 
@@ -122,7 +163,7 @@ void LoadFileMenu::draw() const {
         return;
     }
 
-    float row_total_width = FILE_BUTTON_WIDTH + DELETE_BUTTON_GAP + DELETE_BUTTON_WIDTH;
+    float row_total_width = FILE_BUTTON_WIDTH + DELETE_BUTTON_GAP + EDIT_BTN_WIDTH + DELETE_BUTTON_GAP + DELETE_BUTTON_WIDTH;
     float row_x = (window_width / 2.0f) - (row_total_width / 2.0f);
 
     for (int i = 0; i < (int)(save_file_names.size()); i++) {
@@ -141,7 +182,21 @@ void LoadFileMenu::draw() const {
             return;
         }
 
-        float delete_x = row_x + FILE_BUTTON_WIDTH + DELETE_BUTTON_GAP;
+        float edit_x = row_x + FILE_BUTTON_WIDTH + DELETE_BUTTON_GAP;
+        bool edit_clicked = button("Edit", rectangle_from(
+            edit_x,
+            button_y,
+            EDIT_BTN_WIDTH,
+            FILE_BUTTON_HEIGHT
+        ));
+
+        if (edit_clicked) {
+            play_sound_effect("ui_click");
+            pending_edit_name = save_file_names[i];
+            return;
+        }
+
+        float delete_x = edit_x + EDIT_BTN_WIDTH + DELETE_BUTTON_GAP;
         bool delete_clicked = button("X", rectangle_from(
             delete_x,
             button_y,

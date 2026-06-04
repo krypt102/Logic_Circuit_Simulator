@@ -2,6 +2,7 @@
 
 #include <format>
 
+#include "edit_circuit_details_menu.hpp"
 #include "../../handlers/menu_handler.hpp"
 #include "../../utils/terminal_utils.h"
 #include "../../handlers/circuit_file_handler.hpp"
@@ -9,7 +10,7 @@
 #include "splashkit.h"
 
 const int GRID_CELL_SIZE = 32;
-const float TOOLBAR_HEIGHT = 60.0f;
+const float TOOLBAR_HEIGHT = 80.0f;
 const float SIDEBAR_WIDTH = 180.0f;
 const float SIDEBAR_BUTTON_HEIGHT = 44.0f;
 const float SIDEBAR_BUTTON_GAP = 8.0f;
@@ -601,11 +602,15 @@ void CircuitEditorMenu::handle_toolbar() {
     }
 
     float save_button_width = 80.0f;
-    float save_button_height = 36.0f;
-    float save_button_x = canvas_width() - save_button_width - 12.0f;
-    float save_button_y = (TOOLBAR_HEIGHT - save_button_height) / 2.0f;
+    float edit_button_width = 80.0f;
 
-    bool save_clicked = button("Save", rectangle_from(save_button_x, save_button_y, save_button_width, save_button_height));
+    float button_height = 36.0f;
+    float button_y = (TOOLBAR_HEIGHT - button_height) / 2.0f;
+
+    float save_button_x = canvas_width() - save_button_width - 12.0f;
+    float edit_button_x = save_button_x - edit_button_width - 8.0f;
+
+    bool save_clicked = button("Save", rectangle_from(save_button_x, button_y, save_button_width, button_height));
     if (save_clicked) {
         play_sound_effect("ui_click");
         CircuitFileHandler file_handler;
@@ -617,16 +622,43 @@ void CircuitEditorMenu::handle_toolbar() {
             print_error("Failed to save circuit from editor");
         }
     }
+
+    bool edit_clicked = button("Edit", rectangle_from(edit_button_x, button_y, edit_button_width, button_height));
+    if (edit_clicked) {
+        play_sound_effect("ui_click");
+        menu_handler->push(std::make_unique<EditCircuitDetailsMenu>(
+            circuit.circuit_name,
+            circuit.circuit_description,
+            circuit.circuit_name,
+            [this](const std::string& new_name, const std::string& new_desc) {
+                CircuitFileHandler file_handler;
+                if (circuit.circuit_name != new_name) {
+                    file_handler.delete_circuit(circuit.circuit_name);
+                }
+                circuit.circuit_name = new_name;
+                circuit.circuit_description = new_desc;
+                file_handler.save_circuit(circuit);
+                save_feedback_timer = 180;
+            }
+        ));
+    }
 }
 
 void CircuitEditorMenu::draw_toolbar() const {
     fill_rectangle(COLOR_LIGHT_GRAY, 0, 0, window_width, TOOLBAR_HEIGHT);
 
-    int font_size = 20;
-    float name_x = (canvas_width() / 2.0f) - (text_width(circuit.circuit_name, EDITOR_FONT, font_size) / 2.0f);
-    float name_y = (TOOLBAR_HEIGHT / 2.0f) - (font_size / 2.0f);
-    draw_text(circuit.circuit_name, COLOR_BLACK, EDITOR_FONT, font_size, name_x, name_y);
+    int name_font_size = 20;
+    float name_x = (canvas_width() / 2.0f) - (text_width(circuit.circuit_name, EDITOR_FONT, name_font_size) / 2.0f);
+    draw_text(circuit.circuit_name, COLOR_BLACK, EDITOR_FONT, name_font_size, name_x, 12.0f);
+
+    if (!circuit.circuit_description.empty()) {
+        int desc_font_size = 13;
+        color desc_color = rgba_color(90, 90, 90, 255);
+        float desc_x = (canvas_width() / 2.0f) - (text_width(circuit.circuit_description, EDITOR_FONT, desc_font_size) / 2.0f);
+        draw_text(circuit.circuit_description, desc_color, EDITOR_FONT, desc_font_size, desc_x, 38.0f);
+    }
 }
+
 
 void CircuitEditorMenu::draw_sidebar() const {
     float sidebar_x = canvas_width();

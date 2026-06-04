@@ -48,7 +48,9 @@ int main() {
         // This is temporary...
         // ... once the main buttons and framework are designed, regular text will replace all native splashkit functions
         // ... because it does not allow for multiple font sizes within one interface
+
         set_interface_font_size(24);
+        set_interface_font("JetBrainsMono-Regular");
         menu_handler.update();
         draw_interface();
         refresh_screen(60);
