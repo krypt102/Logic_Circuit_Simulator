@@ -75,7 +75,7 @@ void SettingsMenu::draw() const {
     if (show_grid) {
         snap_to_grid = checkbox("", snap_to_grid, rectangle_from(control_x, row_y, SETTINGS_CONTROL_HEIGHT, SETTINGS_CONTROL_HEIGHT));
     } else {
-        draw_text("(requires Show Grid)", rgba_color(160, 160, 160, 255), SETTINGS_FONT, 14, control_x + SETTINGS_CONTROL_HEIGHT + 8.0f, row_y + 7.0f);
+        draw_text("(requires Show Grid)", rgba_color(160, 160, 160, 255), SETTINGS_FONT, 14, control_x + SETTINGS_CONTROL_HEIGHT + 12.0f, row_y + 7.0f);
         checkbox("", false, rectangle_from(control_x, row_y, SETTINGS_CONTROL_HEIGHT, SETTINGS_CONTROL_HEIGHT));
     }
     row_y += SETTINGS_ROW_HEIGHT;
