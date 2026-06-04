@@ -92,7 +92,7 @@ void LoadFileMenu::confirm_delete(const std::string& filename) {
 
     menu_handler->push(std::make_unique<Modal>(
         "Delete Circuit",
-        "Delete '" + filename + "'? This cannot be undone.",
+        "Delete '" + filename + "'? \nThis cannot be undone.",
         std::move(modal_buttons)
     ));
 }
