@@ -25,7 +25,13 @@ void MenuHandler::update() const {
 
     clear_screen(COLOR_WHITE);
     menu->handle_input();
-    menu->draw();
+    // Sometimes, handle_input() will need to pop() and go back up a menu...
+    // ... if this is the case, the current_menu() will return a different menu pointer and causes
+    // ... a segmentation fault, so don't draw the current menu if that is the case.
+
+    if (current_menu() == menu) {
+        menu->draw();
+    }
 }
 Menu* MenuHandler::current_menu() const {
     if (menus.empty()) {
