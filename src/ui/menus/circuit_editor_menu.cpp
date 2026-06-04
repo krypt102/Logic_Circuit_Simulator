@@ -29,8 +29,6 @@ const float WIRE_HIT_TOLERANCE = 6.0f;
 
 const std::string EDITOR_FONT = "JetBrainsMono-Regular";
 
-const color COLOR_GATE_BODY = rgba_color(51, 120, 204, 255);
-const color COLOR_GATE_DRAGGED = rgba_color(30, 80, 160, 255);
 const color COLOR_GATE_LABEL = COLOR_WHITE;
 const color COLOR_GATE_OUTLINE = COLOR_BLACK;
 
@@ -791,7 +789,7 @@ void CircuitEditorMenu::draw_gate(const Gate &gate) const {
     float gate_y_position = gate.y_position + pan_offset_y;
 
     bool is_dragged = (drag_target == DragTarget::GATE && dragged_id == gate.id);
-    color body_color = is_dragged ? COLOR_GATE_DRAGGED : COLOR_GATE_BODY;
+    color body_color = is_dragged ? dragged_gate_color_for_type(gate.gate_type) : gate_color_for_type(gate.gate_type);
 
     fill_rectangle(body_color, gate_x_position, gate_y_position, GATE_WIDTH, GATE_HEIGHT);
     draw_rectangle(COLOR_GATE_OUTLINE, gate_x_position, gate_y_position, GATE_WIDTH, GATE_HEIGHT);

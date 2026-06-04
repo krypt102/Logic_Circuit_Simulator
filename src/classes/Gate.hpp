@@ -3,6 +3,8 @@
 
 #include <string>
 #include <vector>
+#include "splashkit.h"
+
 #include "Pin.hpp"
 
 enum class GateType {
@@ -16,6 +18,10 @@ enum class GateType {
 };
 
 std::string gate_type_to_string(GateType type);
+
+color gate_color_for_type(GateType type);
+
+color dragged_gate_color_for_type(GateType type);
 
 int input_count_for_type(GateType type);
 
