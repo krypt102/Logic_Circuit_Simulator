@@ -34,22 +34,24 @@ bool CircuitFileHandler::save_circuit(const Circuit& circuit) {
     }
 
     // --- Input pins ---
-    // Format: input_pin:<id>,<x_position>,<y_position>,<value>
+    // Format: input_pin:<id>,<x_position>,<y_position>,<value>,<label>
     for (const InputPin& pin : circuit.circuit_input_pins) {
         file << "input_pin:"
              << pin.id << ","
              << pin.x_position << ","
              << pin.y_position << ","
-             << (pin.value ? "1" : "0") << "\n";
+             << (pin.value ? "1" : "0") << ","
+             << pin.label << "\n";
     }
 
     // --- Output pins ---
-    // Format: output_pin:<id>,<x_position>,<y_position>
+    // Format: output_pin:<id>,<x_position>,<y_position>,<label>
     for (const OutputPin& pin : circuit.circuit_output_pins) {
         file << "output_pin:"
              << pin.id << ","
              << pin.x_position << ","
-             << pin.y_position << "\n";
+             << pin.y_position << ","
+             << pin.label << "\n";
     }
 
     // --- Wires ---
@@ -192,8 +194,8 @@ std::optional<Circuit> CircuitFileHandler::load_circuit(const std::string& filen
             circuit.circuit_gates.emplace_back(id, gate_type, x_position, y_position);
 
         } else if (key == "input_pin") {
-            // input_pin:<id>,<x_position>,<y_position>,<value>
-            if (parts.size() != 4) {
+            // input_pin:<id>,<x_position>,<y_position>,<value>,<label>
+            if (parts.size() < 4) {
                 print_warning("Skipping broken input_pin line: " + obj_line);
                 continue;
             }
@@ -205,10 +207,13 @@ std::optional<Circuit> CircuitFileHandler::load_circuit(const std::string& filen
 
             InputPin pin(id, x_position, y_position);
             pin.value = value_flag;
+            if (parts.size() >= 5) {
+                pin.label = parts[4];
+            }
             circuit.circuit_input_pins.push_back(pin);
         } else if (key == "output_pin") {
-            // output_pin:<id>,<x_position>,<y_position>
-            if (parts.size() != 3) {
+            // output_pin:<id>,<x_position>,<y_position>,<label>
+            if (parts.size() < 3) {
                 print_warning("Skipping broken output_pin line: " + obj_line);
                 continue;
             }
@@ -217,7 +222,11 @@ std::optional<Circuit> CircuitFileHandler::load_circuit(const std::string& filen
             float x_position = std::stof(parts[1]);
             float y_position = std::stof(parts[2]);
 
-            circuit.circuit_output_pins.emplace_back(id, x_position, y_position);
+            OutputPin out_pin(id, x_position, y_position);
+            if (parts.size() >= 4) {
+                out_pin.label = parts[3];
+            }
+            circuit.circuit_output_pins.push_back(out_pin);
 
         } else if (key == "wire") {
             // wire:<id>,<from_type>,<from_id>,<from_pin_id>,<to_type>,<to_id>,<to_pin_id>

@@ -85,6 +85,7 @@ private:
     void end_drag();
 
     void try_remove_at(float mouse_x, float mouse_y);
+    void try_rename_at(float world_x, float world_y);
 
     float canvas_width() const;
     float snap_to_grid_value(float value) const;

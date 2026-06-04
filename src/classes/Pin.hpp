@@ -1,6 +1,8 @@
 #ifndef LOGIC_CIRCUIT_SIMULATOR_PIN_HPP
 #define LOGIC_CIRCUIT_SIMULATOR_PIN_HPP
 
+#include <string>
+
 struct Pin {
     int pin_id;
     float x_position;
@@ -22,12 +24,14 @@ struct InputPin {
     float x_position;
     float y_position;
     bool value;
+    std::string label;
 
     InputPin(int id, float x, float y)
         : id(id),
           x_position(x),
           y_position(y),
-          value(false)
+          value(false),
+          label("")
     {}
 };
 
@@ -36,12 +40,14 @@ struct OutputPin {
     float x_position;
     float y_position;
     bool value;
+    std::string label;
 
     OutputPin(int id, float x, float y)
         : id(id),
           x_position(x),
           y_position(y),
-          value(false)
+          value(false),
+          label("")
     {}
 };
 

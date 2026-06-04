@@ -8,6 +8,7 @@
 #include "../../handlers/circuit_file_handler.hpp"
 #include "../components/BackButton.hpp"
 #include "../components/UniqueButton.hpp"
+#include "../components/RenameModal.hpp"
 #include "splashkit.h"
 
 const int GRID_CELL_SIZE = 32;
@@ -133,6 +134,12 @@ void CircuitEditorMenu::handle_mouse() {
     point_2d world_position = to_world_position(mouse_x, mouse_y);
 
     if (mouse_clicked(RIGHT_BUTTON) && !in_toolbar && !in_sidebar) {
+        bool shift_held = key_down(LEFT_SHIFT_KEY) || key_down(RIGHT_SHIFT_KEY);
+        if (shift_held) {
+            try_rename_at(world_position.x, world_position.y);
+            return;
+        }
+
         if (drawing_wire) {
             cancel_wire();
         } else if (pending_placement != PendingPlacement::NONE) {
@@ -441,6 +448,49 @@ void CircuitEditorMenu::try_remove_at(float mouse_x, float mouse_y) {
     }
 }
 
+void CircuitEditorMenu::try_rename_at(float world_x, float world_y) {
+    int hit_input = input_pin_at(world_x, world_y);
+    if (hit_input != -1) {
+        InputPin* pin = circuit.find_input_pin_by_id(hit_input);
+        if (!pin) {
+            return;
+        }
+
+        std::string current_label = pin->label;
+        menu_handler->push(std::make_unique<RenameModal>(
+            "Rename Input Pin",
+            current_label,
+            [this, hit_input](const std::string& new_label) {
+                InputPin* found_pin = circuit.find_input_pin_by_id(hit_input);
+                if (found_pin) {
+                    found_pin->label = new_label;
+                }
+            }
+        ));
+        return;
+    }
+
+    int hit_output = output_pin_at(world_x, world_y);
+    if (hit_output != -1) {
+        OutputPin* pin = circuit.find_output_pin_by_id(hit_output);
+        if (!pin) {
+            return;
+        }
+
+        std::string current_label = pin->label;
+        menu_handler->push(std::make_unique<RenameModal>(
+            "Rename Output Pin",
+            current_label,
+            [this, hit_output](const std::string& new_label) {
+                OutputPin* found_pin = circuit.find_output_pin_by_id(hit_output);
+                if (found_pin) {
+                    found_pin->label = new_label;
+                }
+            }
+        ));
+    }
+}
+
 int CircuitEditorMenu::gate_at(float x, float y) const {
     for (const Gate &gate : circuit.circuit_gates) {
         bool is_in_x = x >= gate.x_position && x <= gate.x_position + GATE_WIDTH;
@@ -721,8 +771,10 @@ void CircuitEditorMenu::draw_sidebar() const {
     } else if (save_feedback_timer > 0) {
         draw_text("Circuit saved!", COLOR_CIRCUIT_SAVE_MSG, EDITOR_FONT, 11, button_x, window_height - 28.0f);
     } else {
-        draw_text("Shift+click a pin", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 70.0f);
-        draw_text("to start a wire", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 56.0f);
+        draw_text("Shift+L-click pin", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 112.0f);
+        draw_text("to start a wire", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 98.0f);
+        draw_text("Shift+R-click pin", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 70.0f);
+        draw_text("to rename pin", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 56.0f);
         draw_text("Middle mouse button", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 28.0f);
         draw_text("to pan canvas", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 14.0f);
     }
@@ -783,7 +835,7 @@ void CircuitEditorMenu::draw_input_pin(const InputPin &pin) const {
     fill_circle(body_color, screen_x, screen_y, STANDALONE_PIN_RADIUS);
     draw_circle(COLOR_PIN_OUTLINE, screen_x, screen_y, STANDALONE_PIN_RADIUS);
 
-    std::string label = "IN";
+    std::string label = pin.label.empty() ? "IN" : pin.label;
     int font_size = 12;
     float label_x = screen_x - (text_width(label, EDITOR_FONT, font_size) / 2.0f);
     float label_y = screen_y + STANDALONE_PIN_RADIUS + 2.0f;
@@ -806,7 +858,7 @@ void CircuitEditorMenu::draw_output_pin(const OutputPin &pin) const {
     fill_circle(body_color, screen_x, screen_y, STANDALONE_PIN_RADIUS);
     draw_circle(COLOR_PIN_OUTLINE, screen_x, screen_y, STANDALONE_PIN_RADIUS);
 
-    std::string label = "OUT";
+    std::string label = pin.label.empty() ? "OUT" : pin.label;
     int font_size = 12;
     float label_x = screen_x - (text_width(label, EDITOR_FONT, font_size) / 2.0f);
     float label_y = screen_y + STANDALONE_PIN_RADIUS + 2.0f;
