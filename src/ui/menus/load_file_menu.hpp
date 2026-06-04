@@ -26,6 +26,8 @@ private:
     mutable std::string error_message;
     mutable std::string pending_delete_name;
     mutable std::string pending_edit_name;
+    mutable float scroll_offset = 0.0f;
+    mutable float scroll_target = 0.0f;
 
     WindowHandler* window_handler = nullptr;
 

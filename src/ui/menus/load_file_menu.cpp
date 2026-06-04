@@ -1,7 +1,4 @@
 #include "load_file_menu.hpp"
-
-#include <algorithm>
-
 #include "../../handlers/menu_handler.hpp"
 #include "../../handlers/circuit_file_handler.hpp"
 #include "../../utils/terminal_utils.h"
@@ -10,6 +7,7 @@
 #include "../components/UniqueButton.hpp"
 #include "splashkit.h"
 
+#include <algorithm>
 #include <filesystem>
 
 #include "circuit_editor_menu.hpp"
@@ -171,8 +169,39 @@ void LoadFileMenu::draw() const {
     float row_total_width = FILE_BUTTON_WIDTH + DELETE_BUTTON_GAP + EDIT_BTN_WIDTH + DELETE_BUTTON_GAP + DELETE_BUTTON_WIDTH;
     float row_x = (window_width / 2.0f) - (row_total_width / 2.0f);
 
+    float container_top = FILE_LIST_START_Y;
+    float container_bottom = window_height - 80.0f;
+    float container_height = container_bottom - container_top;
+    float container_padding = 8.0f;
+
+    rectangle container_rect = rectangle_from(
+        row_x - container_padding,
+        container_top,
+        row_total_width + container_padding * 2,
+        container_height
+    );
+
+    float row_gap = FILE_BUTTON_HEIGHT + FILE_BUTTON_GAP;
+    float total_content_height = (int)(save_file_names.size()) * row_gap - FILE_BUTTON_GAP;
+    float max_scroll = std::max(0.0f, total_content_height - container_height + container_padding * 2);
+
+    if (point_in_rectangle(mouse_position(), container_rect)) {
+        float wheel = mouse_wheel_scroll().y;
+        if (wheel != 0.0f) {
+            scroll_target -= wheel * 30.0f;
+            scroll_target = std::max(0.0f, std::min(scroll_target, max_scroll));
+        }
+    }
+
+    scroll_offset += (scroll_target - scroll_offset) * 0.2f;
+
+    fill_rectangle(rgba_color(230, 230, 230, 255), container_rect);
+
     for (int i = 0; i < (int)(save_file_names.size()); i++) {
-        float button_y = FILE_LIST_START_Y + i * (FILE_BUTTON_HEIGHT + FILE_BUTTON_GAP);
+        float button_y = container_top + container_padding + i * row_gap - scroll_offset;
+        if (button_y < container_top || button_y + FILE_BUTTON_HEIGHT > container_bottom) {
+            continue;
+        }
 
         bool clicked = unique_button(save_file_names[i], rectangle_from(
             row_x,
@@ -218,6 +247,6 @@ void LoadFileMenu::draw() const {
 
     if (!error_message.empty()) {
         float error_x = (window_width / 2.0f) - (text_width(error_message, LOAD_FONT_STR, 16) / 2.0f);
-        draw_text(error_message, COLOR_RED, LOAD_FONT_STR, 16, error_x, window_height - 60.0f);
+        draw_text(error_message, COLOR_RED, LOAD_FONT_STR, 16, error_x, window_height - 30.0f);
     }
 }
