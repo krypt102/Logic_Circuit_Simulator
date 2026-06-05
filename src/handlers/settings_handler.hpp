@@ -18,7 +18,7 @@ using namespace std;
 
 const string SETTINGS_FILE_PATH = "game_settings.txt";
 const int DEFAULT_WIDTH = 1280;
-const int DEFAULT_HEIGHT = 720;
+const int DEFAULT_HEIGHT = 800;
 const double DEFAULT_BG_VOL = 0.5;
 const bool DEFAULT_SHOW_GRID = true;
 const bool DEFAULT_SNAP_TO_GRID = true;

@@ -6,6 +6,7 @@
 #include "../components/BackButton.hpp"
 #include "../components/UniqueButton.hpp"
 #include "splashkit.h"
+#include <format>
 
 const std::string EDIT_FONT = "JetBrainsMono-Regular";
 const float EDIT_FIELD_WIDTH = 460.0f;
@@ -16,6 +17,7 @@ const float EDIT_FIELD_GAP = 48.0f;
 const float EDIT_BUTTON_WIDTH = 120.0f;
 const float EDIT_BUTTON_HEIGHT = 44.0f;
 const float EDIT_BUTTON_GAP = 16.0f;
+const int MAX_DESC_LENGTH = 80;
 
 EditCircuitDetailsMenu::EditCircuitDetailsMenu(
     std::string current_name,
@@ -50,6 +52,11 @@ void EditCircuitDetailsMenu::handle_input() {
 
         if (!is_valid_circuit_name(name_value)) {
             error_message = "Name cannot be empty or contain: /, \\, :, *, ?, \", <, >, |";
+            return;
+        }
+
+        if (description_value.length() > MAX_DESC_LENGTH) {
+            error_message = std::format("Maximum description length of {} characters", MAX_DESC_LENGTH);
             return;
         }
 
