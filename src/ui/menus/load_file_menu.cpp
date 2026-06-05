@@ -2,6 +2,7 @@
 #include "../../handlers/menu_handler.hpp"
 #include "../../handlers/circuit_file_handler.hpp"
 #include "../../utils/terminal_utils.h"
+#include "../../utils/utilities.h"
 #include "../components/BackButton.hpp"
 #include "../components/Modal.hpp"
 #include "../components/UniqueButton.hpp"
@@ -13,8 +14,11 @@
 #include "circuit_editor_menu.hpp"
 #include "edit_circuit_details_menu.hpp"
 
-const float FILE_BUTTON_WIDTH  = 300.0f;
+const float FILE_BUTTON_WIDTH = 300.0f;
 const float FILE_BUTTON_HEIGHT = 48.0f;
+const float FILE_DESC_FONT_SIZE = 12.0f;
+const float FILE_DESC_LINE_HEIGHT = 16.0f;
+const float FILE_ROW_DESC_PADDING = 6.0f;
 const float FILE_BUTTON_GAP = 12.0f;
 const float FILE_LIST_START_Y = 140.0f;
 const float DELETE_BUTTON_WIDTH = 48.0f;
@@ -44,6 +48,7 @@ void LoadFileMenu::refresh_file_names() {
         return;
     }
 
+    CircuitFileHandler file_handler;
     for (const auto& entry : std::filesystem::directory_iterator(SAVES_FOLDER)) {
         if (!entry.is_regular_file()) {
             continue;
@@ -54,10 +59,15 @@ void LoadFileMenu::refresh_file_names() {
             filename.size() > CIRCUIT_FILE_EXTENSION.size() &&
             filename.substr(filename.size() - CIRCUIT_FILE_EXTENSION.size()) == CIRCUIT_FILE_EXTENSION
         ) {
-            save_file_names.push_back(filename.substr(0, filename.size() - CIRCUIT_FILE_EXTENSION.size()));
+            std::string name = filename.substr(0, filename.size() - CIRCUIT_FILE_EXTENSION.size());
+            std::optional<Circuit> loaded = file_handler.load_circuit(name);
+            std::string desc = loaded.has_value() ? loaded->circuit_description : "";
+            save_file_names.push_back({name, desc});
         }
     }
-    std::sort(save_file_names.begin(), save_file_names.end());
+    std::sort(save_file_names.begin(), save_file_names.end(), [](const auto& a, const auto& b) {
+        return a.first < b.first;
+    });
 }
 
 void LoadFileMenu::open_circuit(const std::string& filename) const {
@@ -181,8 +191,20 @@ void LoadFileMenu::draw() const {
         container_height
     );
 
-    float row_gap = FILE_BUTTON_HEIGHT + FILE_BUTTON_GAP;
-    float total_content_height = (int)(save_file_names.size()) * row_gap - FILE_BUTTON_GAP;
+    auto row_height_for = [&](const std::pair<std::string, std::string>& entry) -> float {
+        if (entry.second.empty()) {
+            return FILE_BUTTON_HEIGHT;
+        }
+        std::vector<std::string> desc_lines = wrap_text(entry.second, row_total_width, LOAD_FONT_STR, (int)FILE_DESC_FONT_SIZE);
+        return FILE_BUTTON_HEIGHT + FILE_ROW_DESC_PADDING + (int)desc_lines.size() * FILE_DESC_LINE_HEIGHT;
+    };
+
+    float total_content_height = 0.0f;
+    for (const auto& entry : save_file_names) {
+        total_content_height += row_height_for(entry) + FILE_BUTTON_GAP;
+    }
+    total_content_height -= FILE_BUTTON_GAP;
+
     float max_scroll = std::max(0.0f, total_content_height - container_height + container_padding * 2);
 
     if (point_in_rectangle(mouse_position(), container_rect)) {
@@ -197,52 +219,69 @@ void LoadFileMenu::draw() const {
 
     fill_rectangle(rgba_color(230, 230, 230, 255), container_rect);
 
+    float current_y = container_top + container_padding - scroll_offset;
     for (int i = 0; i < (int)(save_file_names.size()); i++) {
-        float button_y = container_top + container_padding + i * row_gap - scroll_offset;
-        if (button_y < container_top || button_y + FILE_BUTTON_HEIGHT > container_bottom) {
-            continue;
+        const std::string& name = save_file_names[i].first;
+        const std::string& desc = save_file_names[i].second;
+        float row_height = row_height_for(save_file_names[i]);
+        float button_y_position = current_y;
+
+        if (button_y_position + row_height > container_top && button_y_position < container_bottom) {
+            bool clicked = unique_button(name, rectangle_from(
+                row_x,
+                button_y_position,
+                FILE_BUTTON_WIDTH,
+                FILE_BUTTON_HEIGHT
+            ));
+
+            if (clicked) {
+                play_sound_effect("ui_click");
+                open_circuit(name);
+                return;
+            }
+
+            if (!desc.empty()) {
+                std::vector<std::string> desc_lines = wrap_text(desc, row_total_width, LOAD_FONT_STR, (int)FILE_DESC_FONT_SIZE);
+                float desc_y = button_y_position + FILE_BUTTON_HEIGHT + FILE_ROW_DESC_PADDING;
+                color desc_color = rgba_color(90, 90, 90, 255);
+                for (const std::string& line : desc_lines) {
+                    if (desc_y >= container_top && desc_y < container_bottom) {
+                        draw_text(line, desc_color, LOAD_FONT_STR, (int)FILE_DESC_FONT_SIZE, row_x, desc_y);
+                    }
+                    desc_y += FILE_DESC_LINE_HEIGHT;
+                }
+            }
+
+            float edit_x = row_x + FILE_BUTTON_WIDTH + DELETE_BUTTON_GAP;
+            bool edit_clicked = unique_button("Edit", rectangle_from(
+                edit_x,
+                button_y_position,
+                EDIT_BTN_WIDTH,
+                FILE_BUTTON_HEIGHT
+            ));
+
+            if (edit_clicked) {
+                play_sound_effect("ui_click");
+                pending_edit_name = name;
+                return;
+            }
+
+            float delete_x = edit_x + EDIT_BTN_WIDTH + DELETE_BUTTON_GAP;
+            bool delete_clicked = unique_button("X", rectangle_from(
+                delete_x,
+                button_y_position,
+                DELETE_BUTTON_WIDTH,
+                FILE_BUTTON_HEIGHT
+            ));
+
+            if (delete_clicked) {
+                play_sound_effect("ui_click");
+                pending_delete_name = name;
+                return;
+            }
         }
 
-        bool clicked = unique_button(save_file_names[i], rectangle_from(
-            row_x,
-            button_y,
-            FILE_BUTTON_WIDTH,
-            FILE_BUTTON_HEIGHT
-        ));
-
-        if (clicked) {
-            play_sound_effect("ui_click");
-            open_circuit(save_file_names[i]);
-            return;
-        }
-
-        float edit_x = row_x + FILE_BUTTON_WIDTH + DELETE_BUTTON_GAP;
-        bool edit_clicked = unique_button("Edit", rectangle_from(
-            edit_x,
-            button_y,
-            EDIT_BTN_WIDTH,
-            FILE_BUTTON_HEIGHT
-        ));
-
-        if (edit_clicked) {
-            play_sound_effect("ui_click");
-            pending_edit_name = save_file_names[i];
-            return;
-        }
-
-        float delete_x = edit_x + EDIT_BTN_WIDTH + DELETE_BUTTON_GAP;
-        bool delete_clicked = unique_button("X", rectangle_from(
-            delete_x,
-            button_y,
-            DELETE_BUTTON_WIDTH,
-            FILE_BUTTON_HEIGHT
-        ));
-
-        if (delete_clicked) {
-            play_sound_effect("ui_click");
-            pending_delete_name = save_file_names[i];
-            return;
-        }
+        current_y += row_height + FILE_BUTTON_GAP;
     }
 
     if (!error_message.empty()) {

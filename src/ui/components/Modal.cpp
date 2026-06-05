@@ -1,5 +1,6 @@
 #include "Modal.hpp"
 #include "../../handlers/menu_handler.hpp"
+#include "../../utils/utilities.h"
 #include "splashkit.h"
 #include "UniqueButton.hpp"
 
@@ -32,21 +33,6 @@ void Modal::on_enter(WindowHandler& win_handler, MenuHandler& main_handler) {
 }
 
 void Modal::handle_input() {}
-
-static std::vector<std::string> split_lines(const std::string& text) {
-    std::vector<std::string> lines;
-    std::string current;
-    for (char current_char : text) {
-        if (current_char == '\n') {
-            lines.push_back(current);
-            current.clear();
-        } else {
-            current += current_char;
-        }
-    }
-    lines.push_back(current);
-    return lines;
-}
 
 void Modal::draw() const {
     fill_rectangle(MODAL_COLOR_OVERLAY, 0, 0, window_width, window_height);

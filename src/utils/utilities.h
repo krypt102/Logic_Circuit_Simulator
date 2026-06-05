@@ -75,4 +75,8 @@ string read_line_binary(string prompt);
 
 bool is_valid_circuit_name(const string& name);
 
+std::vector<std::string> wrap_text(const std::string& text, float max_width, const std::string& font = "JetBrainsMono-Regular", int font_size = 24);
+
+std::vector<std::string> split_lines(const std::string& text);
+
 #endif

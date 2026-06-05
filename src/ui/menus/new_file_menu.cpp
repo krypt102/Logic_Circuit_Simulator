@@ -1,5 +1,7 @@
 #include "new_file_menu.hpp"
 
+#include <format>
+
 #include "circuit_editor_menu.hpp"
 #include "../../handlers/menu_handler.hpp"
 #include "../../handlers/circuit_file_handler.hpp"
@@ -11,6 +13,7 @@
 const float FORM_WIDTH = 440.0f;
 const float FORM_HEIGHT = 40.0f;
 const float VERTICAL_GAP = 56.0f;
+const int MAX_DESC_LENGTH = 80;
 
 const std::string FONT_STR = "JetBrainsMono-Regular";
 
@@ -29,6 +32,12 @@ void NewFileMenu::on_enter(WindowHandler& win_handler, MenuHandler& main_handler
 void NewFileMenu::try_create_project() const {
     if (!is_valid_circuit_name(new_file_name)) {
         error_message = "Name cannot be empty or contain: /, \\, :, *, ?, \", <, >, |";
+        return;
+    }
+
+    print_warning("New description length: " + to_string(new_file_desc.length()));
+    if (new_file_desc.length() > MAX_DESC_LENGTH) {
+        error_message = std::format("Maximum description length of {} characters", MAX_DESC_LENGTH);
         return;
     }
 

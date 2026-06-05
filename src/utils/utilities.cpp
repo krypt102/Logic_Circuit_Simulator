@@ -1,5 +1,6 @@
 #include "splashkit.h"
 #include "utilities.h"
+#include <sstream>
 
 void print_repeated(string text_to_print, int times_to_print, bool with_newline) {
     for (int i = 0; i < times_to_print; i++) {
@@ -85,4 +86,45 @@ bool is_valid_circuit_name(const string& name) {
         }
     }
     return true;
+}
+
+std::vector<std::string> wrap_text(
+    const std::string& text,
+    float max_width,
+    const std::string& font,
+    int font_size
+) {
+    std::vector<std::string> lines;
+    std::string current_line;
+
+    for (char current_char : text) {
+        std::string currently_testing = current_line + current_char;
+        if (text_width(currently_testing, font, font_size) > max_width) {
+            lines.push_back(current_line);
+            current_line = current_char;
+        } else {
+            current_line = currently_testing;
+        }
+    }
+
+    if (!current_line.empty()) {
+        lines.push_back(current_line);
+    }
+
+    return lines;
+}
+
+std::vector<std::string> split_lines(const std::string& text) {
+    std::vector<std::string> lines;
+    std::string current;
+    for (char current_char : text) {
+        if (current_char == '\n') {
+            lines.push_back(current);
+            current.clear();
+        } else {
+            current += current_char;
+        }
+    }
+    lines.push_back(current);
+    return lines;
 }

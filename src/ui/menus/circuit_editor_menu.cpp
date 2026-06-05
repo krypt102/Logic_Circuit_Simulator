@@ -5,6 +5,7 @@
 #include "edit_circuit_details_menu.hpp"
 #include "../../handlers/menu_handler.hpp"
 #include "../../utils/terminal_utils.h"
+#include "../../utils/utilities.h"
 #include "../../handlers/circuit_file_handler.hpp"
 #include "../components/BackButton.hpp"
 #include "../components/UniqueButton.hpp"
@@ -12,7 +13,7 @@
 #include "splashkit.h"
 
 const int GRID_CELL_SIZE = 32;
-const float TOOLBAR_HEIGHT = 80.0f;
+const float TOOLBAR_HEIGHT = 95.0f;
 const float SIDEBAR_WIDTH = 180.0f;
 const float SIDEBAR_BUTTON_HEIGHT = 44.0f;
 const float SIDEBAR_BUTTON_GAP = 8.0f;
@@ -713,9 +714,22 @@ void CircuitEditorMenu::draw_toolbar() const {
 
     if (!circuit.circuit_description.empty()) {
         int desc_font_size = 13;
+        float desc_line_height = 15.0f;
         color desc_color = rgba_color(90, 90, 90, 255);
-        float desc_x = (canvas_width() / 2.0f) - (text_width(circuit.circuit_description, EDITOR_FONT, desc_font_size) / 2.0f);
-        draw_text(circuit.circuit_description, desc_color, EDITOR_FONT, desc_font_size, desc_x, 38.0f);
+
+        float back_button_clearance = 120.0f;
+        float toolbar_buttons_clearance = 200.0f;
+        float desc_max_width = canvas_width() - back_button_clearance - toolbar_buttons_clearance;
+
+        std::vector<std::string> desc_lines = wrap_text(circuit.circuit_description, desc_max_width, EDITOR_FONT, desc_font_size);
+        float total_desc_height = (int)desc_lines.size() * desc_line_height;
+        float desc_start_y = (TOOLBAR_HEIGHT / 2.0f) + 8.0f - (total_desc_height / 2.0f);
+
+        for (const std::string& line : desc_lines) {
+            float line_x_position = (canvas_width() / 2.0f) - (text_width(line, EDITOR_FONT, desc_font_size) / 2.0f);
+            draw_text(line, desc_color, EDITOR_FONT, desc_font_size, line_x_position, desc_start_y);
+            desc_start_y += desc_line_height;
+        }
     }
 }
 

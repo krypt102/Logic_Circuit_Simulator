@@ -21,7 +21,7 @@ private:
     int window_height;
 
     SettingsHandler& settings_handler;
-    std::vector<std::string> save_file_names;
+    std::vector<std::pair<std::string, std::string>> save_file_names;
 
     mutable std::string error_message;
     mutable std::string pending_delete_name;
