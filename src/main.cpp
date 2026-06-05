@@ -37,10 +37,15 @@ int main() {
     menu_handler.push(std::make_unique<MainMenu>(game_settings));
 
     print_info("Starting main game loop");
-
     double bg_volume = game_settings.get_setting<double>("bgVolume");
     print_info("Background volume: " + std::to_string(bg_volume));
+    sound_handler.set_bg_volume(bg_volume);
 
+    double sfx_volume = game_settings.get_setting<double>("sfxVolume");
+    print_info("Sound effects volume: " + std::to_string(sfx_volume));
+    sound_handler.set_sfx_volume(sfx_volume);
+
+    print_info("Starting music");
     music background_music = music_named("background_track1");
     play_music(background_music, 10000, bg_volume);
     while (!window_close_requested("Logic Circuit Simulator")) {

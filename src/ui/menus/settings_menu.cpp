@@ -14,25 +14,28 @@ const float SETTINGS_CONTROL_HEIGHT = 30.0f;
 SettingsMenu::SettingsMenu(SettingsHandler& settings_handler)
     : settings_handler(settings_handler),
       bg_volume(0.0f),
+      sfx_volume(0.0f),
       show_grid(true),
       snap_to_grid(true)
 {}
 
 void SettingsMenu::on_enter(WindowHandler& win_handler, MenuHandler& main_handler, SoundHandler& snd_handler) {
     Menu::on_enter(win_handler, main_handler, snd_handler);
-
     bg_volume = (float)(settings_handler.get_setting<double>("bgVolume"));
+    sfx_volume = (float)(settings_handler.get_setting<double>("sfxVolume"));
     show_grid = settings_handler.get_setting<bool>("showGrid");
     snap_to_grid = settings_handler.get_setting<bool>("snapToGrid");
 }
 
 void SettingsMenu::apply_settings() const {
     settings_handler.set_setting("bgVolume", (double)(bg_volume));
+    settings_handler.set_setting("sfxVolume", (double)(sfx_volume));
     settings_handler.set_setting("showGrid", show_grid);
     settings_handler.set_setting("snapToGrid", snap_to_grid);
     settings_handler.save_settings();
 
     sound_handler->set_bg_volume((double)(bg_volume));
+    sound_handler->set_sfx_volume((double)sfx_volume);
 
     print_info("Settings applied");
 }
@@ -61,6 +64,10 @@ void SettingsMenu::draw() const {
     bg_volume = slider(bg_volume, 0.0f, 1.0f, rectangle_from(control_x, row_y, SETTINGS_CONTROL_WIDTH, SETTINGS_CONTROL_HEIGHT));
     row_y += SETTINGS_ROW_HEIGHT;
 
+    draw_text("SFX Volume", COLOR_BLACK, SETTINGS_FONT, (int)(SETTINGS_LABEL_FONT_SIZE), label_x, row_y + 5.0f);
+    sfx_volume = slider(sfx_volume, 0.0f, 1.0f, rectangle_from(control_x, row_y, SETTINGS_CONTROL_WIDTH, SETTINGS_CONTROL_HEIGHT));
+    row_y += SETTINGS_ROW_HEIGHT;
+
     draw_text("Show Grid", COLOR_BLACK, SETTINGS_FONT, (int)(SETTINGS_LABEL_FONT_SIZE), label_x, row_y + 5.0f);
     show_grid = checkbox("", show_grid, rectangle_from(control_x, row_y, SETTINGS_CONTROL_HEIGHT, SETTINGS_CONTROL_HEIGHT));
     if (!show_grid) {
@@ -83,7 +90,7 @@ void SettingsMenu::draw() const {
 
     bool apply_clicked = unique_button("Apply", rectangle_from(apply_x, row_y, apply_button_width, apply_button_height));
     if (apply_clicked) {
-        sound_handler->play_sfx("ui_click");
         apply_settings();
+        sound_handler->play_sfx("ui_click");
     }
 }

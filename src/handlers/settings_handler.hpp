@@ -20,6 +20,7 @@ const string SETTINGS_FILE_PATH = "game_settings.txt";
 const int DEFAULT_WIDTH = 1280;
 const int DEFAULT_HEIGHT = 800;
 const double DEFAULT_BG_VOL = 0.5;
+const double DEFAULT_SFX_VOL = 0.75;
 const bool DEFAULT_SHOW_GRID = true;
 const bool DEFAULT_SNAP_TO_GRID = true;
 
@@ -27,6 +28,7 @@ const std::map<std::string, std::string> DEFAULT_SETTINGS = {
     {"screenWidth",  std::to_string(DEFAULT_WIDTH)},
     {"screenHeight", std::to_string(DEFAULT_HEIGHT)},
     {"bgVolume", std::to_string(DEFAULT_BG_VOL)},
+    {"sfxVolume", std::to_string(DEFAULT_SFX_VOL)},
     {"showGrid", DEFAULT_SHOW_GRID ? "true" : "false"},
     {"snapToGrid", DEFAULT_SNAP_TO_GRID ? "true" : "false"},
 };
@@ -42,6 +44,7 @@ const std::map<std::string, settings_type> VALID_SETTING_TYPES = {
     {"screenWidth",  INT},
     {"screenHeight", INT},
     {"bgVolume", DOUBLE},
+    {"sfxVolume", DOUBLE},
     {"showGrid", BOOL},
     {"snapToGrid", BOOL},
 };

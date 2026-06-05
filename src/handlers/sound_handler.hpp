@@ -11,6 +11,7 @@ namespace filesystem = std::filesystem;
 class SoundHandler {
 private:
     std::vector<music> music_objects;
+    double sfx_volume = 0.0;
 
 public:
     int init_sfx() {
@@ -73,8 +74,12 @@ public:
     // This is a bit of a cheat because SplashKit
     // ... doesn't technically have a set_sfx_volume() function
     void play_sfx(const std::string& name) const {
-        // TODO: Add volume here
-        play_sound_effect(name);
+        // print_warning(std::format("Playing {} at volume {}", name, sfx_volume));
+        play_sound_effect(name, 1, (float)sfx_volume);
+    }
+
+    void set_sfx_volume(double volume) {
+        sfx_volume = volume;
     }
 
     void set_bg_volume(double volume) const {
