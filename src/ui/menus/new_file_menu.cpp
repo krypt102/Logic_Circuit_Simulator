@@ -6,6 +6,7 @@
 #include "splashkit.h"
 #include "../components/BackButton.hpp"
 #include "../components/UniqueButton.hpp"
+#include "../../utils/utilities.h"
 
 const float FORM_WIDTH = 440.0f;
 const float FORM_HEIGHT = 40.0f;
@@ -26,8 +27,8 @@ void NewFileMenu::on_enter(WindowHandler& win_handler, MenuHandler& main_handler
 }
 
 void NewFileMenu::try_create_project() const {
-    if (new_file_name.empty()) {
-        error_message = "Please enter a file name.";
+    if (!is_valid_circuit_name(new_file_name)) {
+        error_message = "Name cannot be empty or contain: /, \\, :, *, ?, \", <, >, |";
         return;
     }
 

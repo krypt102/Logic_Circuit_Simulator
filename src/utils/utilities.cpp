@@ -73,3 +73,16 @@ string read_line_binary(string prompt) {
 
     return user_input;
 }
+
+bool is_valid_circuit_name(const string& name) {
+    if (name.empty()) {
+        return false;
+    }
+    const string illegal_chars = "/\\:*?\"<>|";
+    for (char current_char : name) {
+        if (illegal_chars.find(current_char) != string::npos) {
+            return false;
+        }
+    }
+    return true;
+}

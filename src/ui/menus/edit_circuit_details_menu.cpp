@@ -2,6 +2,7 @@
 #include "../../handlers/menu_handler.hpp"
 #include "../../handlers/circuit_file_handler.hpp"
 #include "../../utils/terminal_utils.h"
+#include "../../utils/utilities.h"
 #include "../components/BackButton.hpp"
 #include "../components/UniqueButton.hpp"
 #include "splashkit.h"
@@ -47,8 +48,8 @@ void EditCircuitDetailsMenu::handle_input() {
     if (pending_save) {
         pending_save = false;
 
-        if (name_value.empty()) {
-            error_message = "Circuit name cannot be empty.";
+        if (!is_valid_circuit_name(name_value)) {
+            error_message = "Name cannot be empty or contain: /, \\, :, *, ?, \", <, >, |";
             return;
         }
 

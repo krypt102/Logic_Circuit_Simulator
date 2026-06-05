@@ -73,4 +73,6 @@ double read_double_range(string prompt, double range_min, double range_max);
 */
 string read_line_binary(string prompt);
 
+bool is_valid_circuit_name(const string& name);
+
 #endif
