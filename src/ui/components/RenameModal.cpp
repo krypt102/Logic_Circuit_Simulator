@@ -1,5 +1,6 @@
 #include "RenameModal.hpp"
 #include "../../handlers/menu_handler.hpp"
+#include "../../handlers/sound_handler.hpp"
 #include "UniqueButton.hpp"
 #include "splashkit.h"
 
@@ -28,20 +29,16 @@ RenameModal::RenameModal(
       on_confirm(std::move(on_confirm))
 {}
 
-void RenameModal::on_enter(WindowHandler& win_handler, MenuHandler& main_handler) {
-    window_handler = &win_handler;
-    menu_handler   = &main_handler;
-    window_width   = win_handler.window_width;
-    window_height  = win_handler.window_height;
-}
-
 void RenameModal::handle_input() {}
 
 void RenameModal::draw() const {
+    int window_width = window_handler->window_width;
+    int window_height = window_handler->window_height;
+
     fill_rectangle(RENAME_MODAL_COLOR_OVERLAY, 0, 0, window_width, window_height);
 
-    float button_row_width  = RENAME_MODAL_WIDTH - RENAME_MODAL_PADDING * 2;
-    float single_btn_width  = (button_row_width - RENAME_MODAL_BUTTON_GAP) / 2.0f;
+    float button_row_width = RENAME_MODAL_WIDTH - RENAME_MODAL_PADDING * 2;
+    float single_btn_width = (button_row_width - RENAME_MODAL_BUTTON_GAP) / 2.0f;
 
     float panel_height =
         RENAME_MODAL_PADDING +
@@ -52,7 +49,7 @@ void RenameModal::draw() const {
         RENAME_MODAL_BUTTON_HEIGHT +
         RENAME_MODAL_PADDING;
 
-    float panel_x = (window_width  / 2.0f) - (RENAME_MODAL_WIDTH    / 2.0f);
+    float panel_x = (window_width / 2.0f) - (RENAME_MODAL_WIDTH / 2.0f);
     float panel_y = (window_height / 2.0f) - (panel_height / 2.0f);
 
     fill_rectangle(RENAME_MODAL_COLOR_PANEL, panel_x, panel_y, RENAME_MODAL_WIDTH, panel_height);
@@ -70,15 +67,15 @@ void RenameModal::draw() const {
     float cancel_x = confirm_x + single_btn_width + RENAME_MODAL_BUTTON_GAP;
 
     bool confirm_clicked = unique_button("Confirm", rectangle_from(confirm_x, buttons_y, single_btn_width, RENAME_MODAL_BUTTON_HEIGHT));
-    bool cancel_clicked = unique_button("Cancel", rectangle_from(cancel_x,  buttons_y, single_btn_width, RENAME_MODAL_BUTTON_HEIGHT));
+    bool cancel_clicked = unique_button("Cancel", rectangle_from(cancel_x, buttons_y, single_btn_width, RENAME_MODAL_BUTTON_HEIGHT));
 
     if (confirm_clicked) {
-        play_sound_effect("ui_click");
+        sound_handler->play_sfx("ui_click");
         on_confirm(current_value);
-        play_sound_effect("click_success");
+        sound_handler->play_sfx("click_success");
         menu_handler->pop();
     } else if (cancel_clicked) {
-        play_sound_effect("ui_click");
+        sound_handler->play_sfx("ui_click");
         menu_handler->pop();
     }
 }

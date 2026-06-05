@@ -1,5 +1,6 @@
 #include "Modal.hpp"
 #include "../../handlers/menu_handler.hpp"
+#include "../../handlers/sound_handler.hpp"
 #include "../../utils/utilities.h"
 #include "splashkit.h"
 #include "UniqueButton.hpp"
@@ -25,16 +26,12 @@ Modal::Modal(std::string title, std::string message, std::vector<ModalButton> bu
       buttons(std::move(buttons))
 {}
 
-void Modal::on_enter(WindowHandler& win_handler, MenuHandler& main_handler) {
-    window_handler = &win_handler;
-    menu_handler = &main_handler;
-    window_width = win_handler.window_width;
-    window_height = win_handler.window_height;
-}
-
 void Modal::handle_input() {}
 
 void Modal::draw() const {
+    int window_width = window_handler->window_width;
+    int window_height = window_handler->window_height;
+
     fill_rectangle(MODAL_COLOR_OVERLAY, 0, 0, window_width, window_height);
 
     std::vector<std::string> lines = split_lines(message);
@@ -90,7 +87,7 @@ void Modal::draw() const {
         rectangle btn_rect = rectangle_from(button_x, buttons_y, button_width, MODAL_BUTTON_HEIGHT);
         bool clicked = unique_button(buttons[i].label, btn_rect);
         if (clicked) {
-            play_sound_effect("ui_click");
+            sound_handler->play_sfx("ui_click");
             buttons[i].on_click();
         }
         button_x += button_width + MODAL_BUTTON_GAP;

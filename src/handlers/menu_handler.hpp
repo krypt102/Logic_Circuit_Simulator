@@ -14,19 +14,23 @@
 // update() - run handle_input() and draw() for the menu each frame.
 
 class MenuHandler {
-    public:
-        MenuHandler(WindowHandler &win_handler) : window_handler(win_handler) {
-            print_info("Initialised menu handler");
-        } ;
+public:
+    MenuHandler(WindowHandler& win_handler, SoundHandler& snd_handler)
+        : window_handler(win_handler),
+          sound_handler(snd_handler)
+    {
+        print_info("Initialised menu handler");
+    };
 
-        void push(std::unique_ptr<Menu> menu);
-        void pop();
-        void update() const;
+    void push(std::unique_ptr<Menu> menu);
+    void pop();
+    void update() const;
 
-    private:
-        std::vector<std::unique_ptr<Menu>> menus;
-        WindowHandler &window_handler;
-        Menu* current_menu() const;
+private:
+    std::vector<std::unique_ptr<Menu>> menus;
+    WindowHandler& window_handler;
+    SoundHandler& sound_handler;
+    Menu* current_menu() const;
 };
 
 #endif

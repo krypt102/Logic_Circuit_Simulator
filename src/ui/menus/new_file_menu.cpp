@@ -17,15 +17,12 @@ const int MAX_DESC_LENGTH = 80;
 
 const std::string FONT_STR = "JetBrainsMono-Regular";
 
-NewFileMenu::NewFileMenu(int window_width, int window_height, SettingsHandler& settings_handler)
-    : window_width(window_width),
-    window_height(window_height),
-    settings_handler(settings_handler)
+NewFileMenu::NewFileMenu(SettingsHandler& settings_handler)
+    : settings_handler(settings_handler)
 {}
 
-void NewFileMenu::on_enter(WindowHandler& win_handler, MenuHandler& main_handler) {
-    window_handler = &win_handler;
-    menu_handler = &main_handler;
+void NewFileMenu::on_enter(WindowHandler& win_handler, MenuHandler& main_handler, SoundHandler& snd_handler) {
+    Menu::on_enter(win_handler, main_handler, snd_handler);
     error_message.clear();
 }
 
@@ -60,14 +57,14 @@ void NewFileMenu::try_create_project() const {
     new_file_desc.clear();
     error_message.clear();
     menu_handler->push(
-        std::make_unique<CircuitEditorMenu>(std::move(created_circuit), window_handler->window_width, window_handler->window_height, settings_handler)
+        std::make_unique<CircuitEditorMenu>(std::move(created_circuit), settings_handler)
     );
 }
 
 void NewFileMenu::handle_input() {
     float caption_text_size = 20;
 
-    float name_box_x_position = (window_width / 2.0f) - (FORM_WIDTH / 2.0f);
+    float name_box_x_position = (window_handler->window_width / 2.0f) - (FORM_WIDTH / 2.0f);
     float name_box_y_position = 140.0f;
     std::string name_box_caption = "New file name:";
 
@@ -75,7 +72,7 @@ void NewFileMenu::handle_input() {
     float name_box_caption_y_position = name_box_y_position + (FORM_HEIGHT / 2.0f / 2.0f);
     draw_text(name_box_caption, COLOR_BLACK, FONT_STR, caption_text_size, name_box_caption_x_position, name_box_caption_y_position);
 
-    float desc_box_x_position = (window_width / 2.0f) - (FORM_WIDTH / 2.0f);
+    float desc_box_x_position = (window_handler->window_width / 2.0f) - (FORM_WIDTH / 2.0f);
     float desc_box_y_position = name_box_y_position + VERTICAL_GAP;
     std::string desc_box_caption = "New file description:";
 
@@ -93,13 +90,13 @@ void NewFileMenu::handle_input() {
 void NewFileMenu::draw() const {
     bool has_clicked_back = draw_back_button();
     if (has_clicked_back) {
-        play_sound_effect("ui_click");
+        sound_handler->play_sfx("ui_click");
         menu_handler->pop();
     }
 
     std::string title_text = "Create New File";
     int title_font_size = 28;
-    float title_x_position = (window_width / 2.0f) - (text_width(title_text, FONT_STR, title_font_size) / 2.0f);
+    float title_x_position = (window_handler->window_width / 2.0f) - (text_width(title_text, FONT_STR, title_font_size) / 2.0f);
     draw_text(title_text, COLOR_BLACK, FONT_STR, title_font_size, title_x_position, 60.0f);
 
     bool create_button_pressed = unique_button("Create file", rectangle_from(
@@ -110,11 +107,11 @@ void NewFileMenu::draw() const {
     ));
 
     if (create_button_pressed) {
-        play_sound_effect("ui_click");
+        sound_handler->play_sfx("ui_click");
         try_create_project();
     }
     if (!error_message.empty()) {
-        float error_x_position = (window_width / 2.0f) - (text_width(error_message, FONT_STR, 16) / 2.0f);
-        draw_text(error_message, COLOR_RED, FONT_STR, 16, error_x_position, window_height - 60.0f);
+        float error_x_position = (window_handler->window_width / 2.0f) - (text_width(error_message, FONT_STR, 16) / 2.0f);
+        draw_text(error_message, COLOR_RED, FONT_STR, 16, error_x_position, window_handler->window_height - 60.0f);
     }
 }

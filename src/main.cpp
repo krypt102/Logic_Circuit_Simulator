@@ -33,8 +33,8 @@ int main() {
     window_handler.init_window(game_settings);
 
     print_info("Initialising menu system");
-    MenuHandler menu_handler(window_handler);
-    menu_handler.push(std::make_unique<MainMenu>(window_handler.window_width, window_handler.window_height, game_settings, sound_handler));
+    MenuHandler menu_handler(window_handler, sound_handler);
+    menu_handler.push(std::make_unique<MainMenu>(game_settings));
 
     print_info("Starting main game loop");
 
@@ -45,9 +45,6 @@ int main() {
     play_music(background_music, 10000, bg_volume);
     while (!window_close_requested("Logic Circuit Simulator")) {
         process_events();
-        // This is temporary...
-        // ... once the main buttons and framework are designed, regular text will replace all native splashkit functions
-        // ... because it does not allow for multiple font sizes within one interface
 
         set_interface_font_size(24);
         set_interface_font("JetBrainsMono-Regular");

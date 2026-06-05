@@ -8,18 +8,15 @@
 
 class LoadFileMenu : public Menu {
 public:
-    LoadFileMenu(int window_width, int window_height, SettingsHandler& settings_handler);
+    LoadFileMenu(SettingsHandler& settings_handler);
 
-    void on_enter(WindowHandler& window_handler, MenuHandler& menu_handler) override;
+    void on_enter(WindowHandler& window_handler, MenuHandler& menu_handler, SoundHandler& sound_handler) override;
     void handle_input() override;
     void draw() const override;
 
     void refresh_file_names();
 
 private:
-    int window_width;
-    int window_height;
-
     SettingsHandler& settings_handler;
     std::vector<std::pair<std::string, std::string>> save_file_names;
 
@@ -28,8 +25,6 @@ private:
     mutable std::string pending_edit_name;
     mutable float scroll_offset = 0.0f;
     mutable float scroll_target = 0.0f;
-
-    WindowHandler* window_handler = nullptr;
 
     void open_circuit(const std::string& filename) const;
     void confirm_delete(const std::string& filename);

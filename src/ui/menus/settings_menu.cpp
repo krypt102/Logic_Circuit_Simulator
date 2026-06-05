@@ -1,5 +1,6 @@
 #include "settings_menu.hpp"
 #include "../../handlers/menu_handler.hpp"
+#include "../../handlers/sound_handler.hpp"
 #include "../components/BackButton.hpp"
 #include "../components/UniqueButton.hpp"
 #include "splashkit.h"
@@ -10,19 +11,15 @@ const float SETTINGS_ROW_HEIGHT = 60.0f;
 const float SETTINGS_CONTROL_WIDTH = 300.0f;
 const float SETTINGS_CONTROL_HEIGHT = 30.0f;
 
-SettingsMenu::SettingsMenu(int window_width, int window_height, SettingsHandler& settings_handler, SoundHandler& sound_handler)
-    : window_width(window_width),
-      window_height(window_height),
-      settings_handler(settings_handler),
-      sound_handler(sound_handler),
+SettingsMenu::SettingsMenu(SettingsHandler& settings_handler)
+    : settings_handler(settings_handler),
       bg_volume(0.0f),
       show_grid(true),
       snap_to_grid(true)
 {}
 
-void SettingsMenu::on_enter(WindowHandler& win_handler, MenuHandler& main_handler) {
-    window_handler = &win_handler;
-    menu_handler = &main_handler;
+void SettingsMenu::on_enter(WindowHandler& win_handler, MenuHandler& main_handler, SoundHandler& snd_handler) {
+    Menu::on_enter(win_handler, main_handler, snd_handler);
 
     bg_volume = (float)(settings_handler.get_setting<double>("bgVolume"));
     show_grid = settings_handler.get_setting<bool>("showGrid");
@@ -35,7 +32,7 @@ void SettingsMenu::apply_settings() const {
     settings_handler.set_setting("snapToGrid", snap_to_grid);
     settings_handler.save_settings();
 
-    sound_handler.set_bg_volume((double)(bg_volume));
+    sound_handler->set_bg_volume((double)(bg_volume));
 
     print_info("Settings applied");
 }
@@ -45,7 +42,7 @@ void SettingsMenu::handle_input() {}
 void SettingsMenu::draw() const {
     bool clicked_back = draw_back_button();
     if (clicked_back) {
-        play_sound_effect("ui_click");
+        sound_handler->play_sfx("ui_click");
         menu_handler->pop();
         return;
     }
@@ -53,11 +50,11 @@ void SettingsMenu::draw() const {
     std::string title_text = "Settings";
 
     int title_font_size = 36;
-    float title_x = (window_width / 2.0f) - (text_width(title_text, SETTINGS_FONT, title_font_size) / 2.0f);
+    float title_x = (window_handler->window_width / 2.0f) - (text_width(title_text, SETTINGS_FONT, title_font_size) / 2.0f);
     draw_text(title_text, COLOR_BLACK, SETTINGS_FONT, title_font_size, title_x, 60.0f);
 
-    float label_x = (window_width / 2.0f) - 260.0f;
-    float control_x = (window_width / 2.0f) + 60.0f;
+    float label_x = (window_handler->window_width / 2.0f) - 260.0f;
+    float control_x = (window_handler->window_width / 2.0f) + 60.0f;
     float row_y = 160.0f;
 
     draw_text("Background Volume", COLOR_BLACK, SETTINGS_FONT, (int)(SETTINGS_LABEL_FONT_SIZE), label_x, row_y + 5.0f);
@@ -82,11 +79,11 @@ void SettingsMenu::draw() const {
 
     float apply_button_width = 160.0f;
     float apply_button_height = 44.0f;
-    float apply_x = (window_width / 2.0f) - (apply_button_width / 2.0f);
+    float apply_x = (window_handler->window_width / 2.0f) - (apply_button_width / 2.0f);
 
     bool apply_clicked = unique_button("Apply", rectangle_from(apply_x, row_y, apply_button_width, apply_button_height));
     if (apply_clicked) {
-        play_sound_effect("ui_click");
+        sound_handler->play_sfx("ui_click");
         apply_settings();
     }
 }

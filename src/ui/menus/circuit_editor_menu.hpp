@@ -34,24 +34,19 @@ struct WireEndpoint {
 
 class CircuitEditorMenu : public Menu {
 public:
-    CircuitEditorMenu(Circuit circuit, int window_width, int window_height, SettingsHandler& settings_handler);
+    CircuitEditorMenu(Circuit circuit, SettingsHandler& settings_handler);
 
-    void on_enter(WindowHandler& window_handler, MenuHandler& menu_handler) override;
+    void on_enter(WindowHandler& window_handler, MenuHandler& menu_handler, SoundHandler& sound_handler) override;
     void handle_input() override;
     void draw() const override;
 
 private:
     Circuit circuit;
-    int window_width;
-    int window_height;
 
     SettingsHandler& settings_handler;
 
     bool show_grid = true;
     bool snap_to_grid = true;
-
-    WindowHandler* window_handler = nullptr;
-    MenuHandler* menu_handler = nullptr;
 
     DragTarget drag_target = DragTarget::NONE;
     int dragged_id = -1;

@@ -7,16 +7,13 @@
 
 class NewFileMenu : public Menu {
 public:
-    NewFileMenu(int window_width, int window_height, SettingsHandler& settings_handler);
+    NewFileMenu(SettingsHandler& settings_handler);
 
-    void on_enter(WindowHandler& window_handler, MenuHandler& menu_handler) override;
+    void on_enter(WindowHandler& window_handler, MenuHandler& menu_handler, SoundHandler& sound_handler) override;
     void handle_input() override;
     void draw() const override;
 
 private:
-    int window_width;
-    int window_height;
-
     SettingsHandler& settings_handler;
 
     mutable std::string error_message;
@@ -26,11 +23,7 @@ private:
     float last_text_box_x_position = 0.0f;
     float last_text_box_y_position = 0.0f;
 
-    WindowHandler* window_handler = nullptr;
-    MenuHandler* menu_handler = nullptr;
-
     void try_create_project() const;
 };
-
 
 #endif //LOGIC_CIRCUIT_SIMULATOR_NEW_FILE_MENU_HPP

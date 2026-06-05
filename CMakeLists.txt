@@ -44,5 +44,6 @@ add_executable(Logic_Circuit_Simulator
         src/ui/components/UniqueButton.cpp
         src/ui/components/UniqueButton.hpp
         src/ui/components/RenameModal.cpp
-        src/ui/components/RenameModal.hpp)
+        src/ui/components/RenameModal.hpp
+        src/classes/Menu.cpp)
 target_link_libraries(Logic_Circuit_Simulator PRIVATE SplashKit)

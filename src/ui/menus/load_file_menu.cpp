@@ -26,15 +26,12 @@ const float DELETE_BUTTON_GAP = 8.0f;
 const float EDIT_BTN_WIDTH = 60.0f;
 const std::string LOAD_FONT_STR = "JetBrainsMono-Regular";
 
-LoadFileMenu::LoadFileMenu(int window_width, int window_height, SettingsHandler& settings_handler)
-    : window_width(window_width),
-    window_height(window_height),
-    settings_handler(settings_handler)
+LoadFileMenu::LoadFileMenu(SettingsHandler& settings_handler)
+    : settings_handler(settings_handler)
 {}
 
-void LoadFileMenu::on_enter(WindowHandler& win_handler, MenuHandler& main_handler) {
-    window_handler = &win_handler;
-    menu_handler = &main_handler;
+void LoadFileMenu::on_enter(WindowHandler& win_handler, MenuHandler& main_handler, SoundHandler& snd_handler) {
+    Menu::on_enter(win_handler, main_handler, snd_handler);
     error_message.clear();
     pending_delete_name.clear();
     pending_edit_name.clear();
@@ -62,7 +59,7 @@ void LoadFileMenu::refresh_file_names() {
             std::string name = filename.substr(0, filename.size() - CIRCUIT_FILE_EXTENSION.size());
             std::optional<Circuit> loaded = file_handler.load_circuit(name);
             std::string desc = loaded.has_value() ? loaded->circuit_description : "";
-            save_file_names.push_back({name, desc});
+            save_file_names.emplace_back(name, desc);
         }
     }
     std::sort(save_file_names.begin(), save_file_names.end(), [](const auto& a, const auto& b) {
@@ -82,7 +79,7 @@ void LoadFileMenu::open_circuit(const std::string& filename) const {
 
     print_info("LoadFileMenu: circuit loaded: " + loaded_circuit->circuit_name);
     menu_handler->push(
-        std::make_unique<CircuitEditorMenu>(std::move(*loaded_circuit), window_handler->window_width, window_handler->window_height, settings_handler)
+        std::make_unique<CircuitEditorMenu>(std::move(*loaded_circuit), settings_handler)
     );
 }
 
@@ -159,28 +156,28 @@ void LoadFileMenu::handle_input() {
 void LoadFileMenu::draw() const {
     bool has_clicked_back = draw_back_button();
     if (has_clicked_back) {
-        play_sound_effect("ui_click");
+        sound_handler->play_sfx("ui_click");
         menu_handler->pop();
         return;
     }
 
     std::string title_text = "Load Circuit";
     int title_font_size = 28;
-    float title_x = (window_width / 2.0f) - (text_width(title_text, LOAD_FONT_STR, title_font_size) / 2.0f);
+    float title_x = (window_handler->window_width / 2.0f) - (text_width(title_text, LOAD_FONT_STR, title_font_size) / 2.0f);
     draw_text(title_text, COLOR_BLACK, LOAD_FONT_STR, title_font_size, title_x, 60.0f);
 
     if (save_file_names.empty()) {
         std::string no_files_msg = "No saved circuits found.";
-        float msg_x = (window_width / 2.0f) - (text_width(no_files_msg, LOAD_FONT_STR, 22) / 2.0f);
-        draw_text(no_files_msg, COLOR_GRAY, LOAD_FONT_STR, 22, msg_x, window_height / 2.0f);
+        float msg_x = (window_handler->window_width / 2.0f) - (text_width(no_files_msg, LOAD_FONT_STR, 22) / 2.0f);
+        draw_text(no_files_msg, COLOR_GRAY, LOAD_FONT_STR, 22, msg_x, window_handler->window_height / 2.0f);
         return;
     }
 
     float row_total_width = FILE_BUTTON_WIDTH + DELETE_BUTTON_GAP + EDIT_BTN_WIDTH + DELETE_BUTTON_GAP + DELETE_BUTTON_WIDTH;
-    float row_x = (window_width / 2.0f) - (row_total_width / 2.0f);
+    float row_x = (window_handler->window_width / 2.0f) - (row_total_width / 2.0f);
 
     float container_top = FILE_LIST_START_Y;
-    float container_bottom = window_height - 80.0f;
+    float container_bottom = window_handler->window_height - 80.0f;
     float container_height = container_bottom - container_top;
     float container_padding = 8.0f;
 
@@ -235,7 +232,7 @@ void LoadFileMenu::draw() const {
             ));
 
             if (clicked) {
-                play_sound_effect("ui_click");
+                sound_handler->play_sfx("ui_click");
                 open_circuit(name);
                 return;
             }
@@ -261,7 +258,7 @@ void LoadFileMenu::draw() const {
             ));
 
             if (edit_clicked) {
-                play_sound_effect("ui_click");
+                sound_handler->play_sfx("ui_click");
                 pending_edit_name = name;
                 return;
             }
@@ -275,7 +272,7 @@ void LoadFileMenu::draw() const {
             ));
 
             if (delete_clicked) {
-                play_sound_effect("ui_click");
+                sound_handler->play_sfx("ui_click");
                 pending_delete_name = name;
                 return;
             }
@@ -285,7 +282,7 @@ void LoadFileMenu::draw() const {
     }
 
     if (!error_message.empty()) {
-        float error_x = (window_width / 2.0f) - (text_width(error_message, LOAD_FONT_STR, 16) / 2.0f);
-        draw_text(error_message, COLOR_RED, LOAD_FONT_STR, 16, error_x, window_height - 30.0f);
+        float error_x = (window_handler->window_width / 2.0f) - (text_width(error_message, LOAD_FONT_STR, 16) / 2.0f);
+        draw_text(error_message, COLOR_RED, LOAD_FONT_STR, 16, error_x, window_handler->window_height - 30.0f);
     }
 }

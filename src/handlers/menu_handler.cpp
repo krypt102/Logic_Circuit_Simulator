@@ -5,7 +5,7 @@
 void MenuHandler::push(std::unique_ptr<Menu> menu) {
     Menu* raw = menu.get();
     menus.push_back(std::move(menu));
-    raw->on_enter(window_handler, *this);
+    raw->on_enter(window_handler, *this, sound_handler);
 }
 
 void MenuHandler::pop() {
@@ -15,7 +15,7 @@ void MenuHandler::pop() {
     }
 
     menus.pop_back();
-    current_menu()->on_enter(window_handler, *this);
+    current_menu()->on_enter(window_handler, *this, sound_handler);
 }
 
 void MenuHandler::update() const {
@@ -28,14 +28,15 @@ void MenuHandler::update() const {
 
     clear_screen(COLOR_WHITE);
     menu->handle_input();
+
     // Sometimes, handle_input() will need to pop() and go back up a menu...
     // ... if this is the case, the current_menu() will return a different menu pointer and causes
     // ... a segmentation fault, so don't draw the current menu if that is the case.
-
     if (current_menu() == menu) {
         menu->draw();
     }
 }
+
 Menu* MenuHandler::current_menu() const {
     if (menus.empty()) {
         return nullptr;

@@ -48,26 +48,23 @@ const color COLOR_HINT_PLACEMENT = rgba_color(100, 180, 255, 255);
 
 const color COLOR_CIRCUIT_SAVE_MSG = rgba_color(46, 184, 97, 255);
 
-CircuitEditorMenu::CircuitEditorMenu(Circuit circuit, int window_width, int window_height, SettingsHandler& settings_handler)
+CircuitEditorMenu::CircuitEditorMenu(Circuit circuit, SettingsHandler& settings_handler)
     : circuit(std::move(circuit)),
-      window_width(window_width),
-      window_height(window_height),
       settings_handler(settings_handler),
       wire_start()
 {
     print_info("CircuitEditorMenu created for circuit: " + this->circuit.circuit_name);
 }
 
-void CircuitEditorMenu::on_enter(WindowHandler &win_handler, MenuHandler &main_handler) {
-    window_handler = &win_handler;
-    menu_handler = &main_handler;
+void CircuitEditorMenu::on_enter(WindowHandler &win_handler, MenuHandler &main_handler, SoundHandler &snd_handler) {
+    Menu::on_enter(win_handler, main_handler, snd_handler);
     show_grid = settings_handler.get_setting<bool>("showGrid");
     snap_to_grid = show_grid && settings_handler.get_setting<bool>("snapToGrid");
     print_info("Entered circuit editor: " + circuit.circuit_name);
 }
 
 float CircuitEditorMenu::canvas_width() const {
-    return window_width - SIDEBAR_WIDTH;
+    return window_handler->window_width - SIDEBAR_WIDTH;
 }
 
 float CircuitEditorMenu::snap_to_grid_value(float value) const {
@@ -171,7 +168,7 @@ void CircuitEditorMenu::handle_mouse() {
             int hit_input = input_pin_at(world_position.x, world_position.y);
             if (hit_input != -1) {
                 circuit.toggle_input_pin(hit_input);
-                play_sound_effect("click_success");
+                sound_handler->play_sfx("click_success");
                 return;
             }
         }
@@ -227,7 +224,7 @@ void CircuitEditorMenu::place_pending(float canvas_x, float canvas_y) {
         case PendingPlacement::NONE:
             break;
     }
-    play_sound_effect("click_success");
+    sound_handler->play_sfx("click_success");
     pending_placement = PendingPlacement::NONE;
 }
 
@@ -332,7 +329,7 @@ void CircuitEditorMenu::finish_wire(float mouse_x, float mouse_y) {
         ending_source.object_type, ending_source.object_id, ending_source.pin_id
     );
 
-    play_sound_effect("click_success");
+    sound_handler->play_sfx("click_success");
 
     print_info("Wire added");
     drawing_wire = false;
@@ -340,7 +337,7 @@ void CircuitEditorMenu::finish_wire(float mouse_x, float mouse_y) {
 
 void CircuitEditorMenu::cancel_wire() {
     drawing_wire = false;
-    play_sound_effect("click_success");
+    sound_handler->play_sfx("click_success");
     print_info("Wire drawing cancelled");
 }
 
@@ -431,21 +428,21 @@ void CircuitEditorMenu::try_remove_at(float mouse_x, float mouse_y) {
     int hit_gate = gate_at(mouse_x, mouse_y);
     if (hit_gate != -1) {
         circuit.remove_gate(hit_gate);
-        play_sound_effect("click_success");
+        sound_handler->play_sfx("click_success");
         return;
     }
 
     int hit_input = input_pin_at(mouse_x, mouse_y);
     if (hit_input != -1) {
         circuit.remove_input_pin(hit_input);
-        play_sound_effect("click_success");
+        sound_handler->play_sfx("click_success");
         return;
     }
 
     int hit_output = output_pin_at(mouse_x, mouse_y);
     if (hit_output != -1) {
         circuit.remove_output_pin(hit_output);
-        play_sound_effect("click_success");
+        sound_handler->play_sfx("click_success");
         return;
     }
 
@@ -644,9 +641,9 @@ void CircuitEditorMenu::draw_grid() const {
     float offset_y = std::fmod(pan_offset_y, GRID_CELL_SIZE);
 
     for (float x = offset_x; x < canvas_width(); x += GRID_CELL_SIZE) {
-        draw_line(grid_color, x, grid_top, x, window_height);
+        draw_line(grid_color, x, grid_top, x, window_handler->window_height);
     }
-    for (float y = grid_top + offset_y; y < window_height; y += GRID_CELL_SIZE) {
+    for (float y = grid_top + offset_y; y < window_handler->window_height; y += GRID_CELL_SIZE) {
         draw_line(grid_color, 0, y, canvas_width(), y);
     }
 }
@@ -654,7 +651,7 @@ void CircuitEditorMenu::draw_grid() const {
 void CircuitEditorMenu::handle_toolbar() {
     bool clicked_back = draw_back_button();
     if (clicked_back) {
-        play_sound_effect("ui_click");
+        sound_handler->play_sfx("ui_click");
         menu_handler->pop();
         return;
     }
@@ -670,7 +667,7 @@ void CircuitEditorMenu::handle_toolbar() {
 
     bool save_clicked = unique_button("Save", rectangle_from(save_button_x, button_y, save_button_width, button_height));
     if (save_clicked) {
-        play_sound_effect("ui_click");
+        sound_handler->play_sfx("ui_click");
         CircuitFileHandler file_handler;
         bool saved = file_handler.save_circuit(circuit);
         if (saved) {
@@ -683,7 +680,7 @@ void CircuitEditorMenu::handle_toolbar() {
 
     bool edit_clicked = unique_button("Edit", rectangle_from(edit_button_x, button_y, edit_button_width, button_height));
     if (edit_clicked) {
-        play_sound_effect("ui_click");
+        sound_handler->play_sfx("ui_click");
         menu_handler->push(std::make_unique<EditCircuitDetailsMenu>(
             circuit.circuit_name,
             circuit.circuit_description,
@@ -706,7 +703,7 @@ void CircuitEditorMenu::handle_toolbar() {
 }
 
 void CircuitEditorMenu::draw_toolbar() const {
-    fill_rectangle(COLOR_LIGHT_GRAY, 0, 0, window_width, TOOLBAR_HEIGHT);
+    fill_rectangle(COLOR_LIGHT_GRAY, 0, 0, window_handler->window_width, TOOLBAR_HEIGHT);
 
     int name_font_size = 20;
     float name_x = (canvas_width() / 2.0f) - (text_width(circuit.circuit_name, EDITOR_FONT, name_font_size) / 2.0f);
@@ -736,7 +733,7 @@ void CircuitEditorMenu::draw_toolbar() const {
 
 void CircuitEditorMenu::draw_sidebar() const {
     float sidebar_x = canvas_width();
-    fill_rectangle(COLOR_SIDEBAR_BG, sidebar_x, 0, SIDEBAR_WIDTH, window_height);
+    fill_rectangle(COLOR_SIDEBAR_BG, sidebar_x, 0, SIDEBAR_WIDTH, window_handler->window_height);
 
     float button_x = sidebar_x + SIDEBAR_PADDING;
     float button_width = SIDEBAR_WIDTH - SIDEBAR_PADDING * 2;
@@ -758,7 +755,7 @@ void CircuitEditorMenu::draw_sidebar() const {
     for (const auto &[label, placement] : gate_buttons) {
         bool clicked = unique_button(label, rectangle_from(button_x, current_y, button_width, SIDEBAR_BUTTON_HEIGHT));
         if (clicked) {
-            play_sound_effect("ui_click");
+            sound_handler->play_sfx("ui_click");
             pending_placement = placement;
         }
         current_y += SIDEBAR_BUTTON_HEIGHT + SIDEBAR_BUTTON_GAP;
@@ -770,36 +767,36 @@ void CircuitEditorMenu::draw_sidebar() const {
 
     bool input_clicked = unique_button("Input Pin", rectangle_from(button_x, current_y, button_width, SIDEBAR_BUTTON_HEIGHT));
     if (input_clicked) {
-        play_sound_effect("ui_click");
+        sound_handler->play_sfx("ui_click");
         pending_placement = PendingPlacement::INPUT_PIN;
     }
     current_y += SIDEBAR_BUTTON_HEIGHT + SIDEBAR_BUTTON_GAP;
 
     bool output_clicked = unique_button("Output Pin", rectangle_from(button_x, current_y, button_width, SIDEBAR_BUTTON_HEIGHT));
     if (output_clicked) {
-        play_sound_effect("ui_click");
+        sound_handler->play_sfx("ui_click");
         pending_placement = PendingPlacement::OUTPUT_PIN;
     }
 
     if (drawing_wire) {
-        draw_text("Click any pin", COLOR_WIRE_IN_PROGRESS, EDITOR_FONT, 11, button_x, window_height - 56.0f);
-        draw_text("to finish wire", COLOR_WIRE_IN_PROGRESS, EDITOR_FONT, 11, button_x, window_height - 42.0f);
-        draw_text("Esc / R-click", COLOR_WIRE_IN_PROGRESS, EDITOR_FONT, 11, button_x, window_height - 28.0f);
-        draw_text("to cancel", COLOR_WIRE_IN_PROGRESS, EDITOR_FONT, 11, button_x, window_height - 14.0f);
+        draw_text("Click any pin", COLOR_WIRE_IN_PROGRESS, EDITOR_FONT, 11, button_x, window_handler->window_height - 56.0f);
+        draw_text("to finish wire", COLOR_WIRE_IN_PROGRESS, EDITOR_FONT, 11, button_x, window_handler->window_height - 42.0f);
+        draw_text("Esc / R-click", COLOR_WIRE_IN_PROGRESS, EDITOR_FONT, 11, button_x, window_handler->window_height - 28.0f);
+        draw_text("to cancel", COLOR_WIRE_IN_PROGRESS, EDITOR_FONT, 11, button_x, window_handler->window_height - 14.0f);
     } else if (pending_placement != PendingPlacement::NONE) {
-        draw_text("Click the canvas", COLOR_HINT_PLACEMENT, EDITOR_FONT, 11, button_x, window_height - 56.0f);
-        draw_text("to place item", COLOR_HINT_PLACEMENT, EDITOR_FONT, 11, button_x, window_height - 42.0f);
-        draw_text("Esc / R-click", COLOR_HINT_PLACEMENT, EDITOR_FONT, 11, button_x, window_height - 28.0f);
-        draw_text("to cancel", COLOR_HINT_PLACEMENT, EDITOR_FONT, 11, button_x, window_height - 14.0f);
+        draw_text("Click the canvas", COLOR_HINT_PLACEMENT, EDITOR_FONT, 11, button_x, window_handler->window_height - 56.0f);
+        draw_text("to place item", COLOR_HINT_PLACEMENT, EDITOR_FONT, 11, button_x, window_handler->window_height - 42.0f);
+        draw_text("Esc / R-click", COLOR_HINT_PLACEMENT, EDITOR_FONT, 11, button_x, window_handler->window_height - 28.0f);
+        draw_text("to cancel", COLOR_HINT_PLACEMENT, EDITOR_FONT, 11, button_x, window_handler->window_height - 14.0f);
     } else if (save_feedback_timer > 0) {
-        draw_text("Circuit saved!", COLOR_CIRCUIT_SAVE_MSG, EDITOR_FONT, 11, button_x, window_height - 28.0f);
+        draw_text("Circuit saved!", COLOR_CIRCUIT_SAVE_MSG, EDITOR_FONT, 11, button_x, window_handler->window_height - 28.0f);
     } else {
-        draw_text("Shift+L-click pin", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 112.0f);
-        draw_text("to start a wire", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 98.0f);
-        draw_text("Shift+R-click pin", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 70.0f);
-        draw_text("to rename pin", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 56.0f);
-        draw_text("Middle mouse button", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 28.0f);
-        draw_text("to pan canvas", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_height - 14.0f);
+        draw_text("Shift+L-click pin", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_handler->window_height - 112.0f);
+        draw_text("to start a wire", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_handler->window_height - 98.0f);
+        draw_text("Shift+R-click pin", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_handler->window_height - 70.0f);
+        draw_text("to rename pin", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_handler->window_height - 56.0f);
+        draw_text("Middle mouse button", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_handler->window_height - 28.0f);
+        draw_text("to pan canvas", COLOR_SECTION_LABEL, EDITOR_FONT, 11, button_x, window_handler->window_height - 14.0f);
     }
 }
 
