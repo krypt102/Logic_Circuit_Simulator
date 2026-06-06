@@ -265,26 +265,18 @@ void CircuitEditorMenu::update_drag(float mouse_x, float mouse_y) {
     float new_y = snap_to_grid_value(world.y - drag_offset_y);
 
     if (drag_target == DragTarget::GATE) {
-        new_x = std::min(new_x, canvas_width() - GATE_WIDTH);
-        new_y = std::max(new_y, TOOLBAR_HEIGHT);
         Gate *gate = circuit.find_gate_with_id(dragged_id);
         if (gate) {
             gate->x_position = new_x;
             gate->y_position = new_y;
         }
     } else if (drag_target == DragTarget::INPUT_PIN) {
-        new_x = std::min(new_x, canvas_width() - STANDALONE_PIN_RADIUS);
-        new_x = std::max(new_x, STANDALONE_PIN_RADIUS);
-        new_y = std::max(new_y, TOOLBAR_HEIGHT + STANDALONE_PIN_RADIUS);
         InputPin *pin = circuit.find_input_pin_by_id(dragged_id);
         if (pin) {
             pin->x_position = new_x;
             pin->y_position = new_y;
         }
     } else if (drag_target == DragTarget::OUTPUT_PIN) {
-        new_x = std::min(new_x, canvas_width() - STANDALONE_PIN_RADIUS);
-        new_x = std::max(new_x, STANDALONE_PIN_RADIUS);
-        new_y = std::max(new_y, TOOLBAR_HEIGHT + STANDALONE_PIN_RADIUS);
         OutputPin *pin = circuit.find_output_pin_by_id(dragged_id);
         if (pin) {
             pin->x_position = new_x;
