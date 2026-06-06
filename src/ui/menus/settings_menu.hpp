@@ -19,6 +19,9 @@ private:
     mutable float sfx_volume;
     mutable bool show_grid;
     mutable bool snap_to_grid;
+    mutable int selected_res_index;
+    mutable int monitor_width;
+    mutable int monitor_height;
 
     void apply_settings() const;
 };

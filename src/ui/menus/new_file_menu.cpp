@@ -32,7 +32,7 @@ void NewFileMenu::try_create_project() const {
         return;
     }
 
-    print_warning("New description length: " + to_string(new_file_desc.length()));
+    // print_warning("New description length: " + to_string(new_file_desc.length()));
     if (new_file_desc.length() > MAX_DESC_LENGTH) {
         error_message = std::format("Maximum description length of {} characters", MAX_DESC_LENGTH);
         return;
