@@ -53,7 +53,7 @@ CircuitEditorMenu::CircuitEditorMenu(Circuit circuit, SettingsHandler& settings_
       settings_handler(settings_handler),
       wire_start()
 {
-    print_info("CircuitEditorMenu created for circuit: " + this->circuit.circuit_name);
+    print_info("CircuitEditorMenu Initialized for circuit: " + this->circuit.circuit_name);
 }
 
 void CircuitEditorMenu::on_enter(WindowHandler &win_handler, MenuHandler &main_handler, SoundHandler &snd_handler) {

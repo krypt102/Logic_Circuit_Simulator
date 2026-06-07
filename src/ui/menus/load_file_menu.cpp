@@ -28,7 +28,9 @@ const std::string LOAD_FONT_STR = "JetBrainsMono-Regular";
 
 LoadFileMenu::LoadFileMenu(SettingsHandler& settings_handler)
     : settings_handler(settings_handler)
-{}
+{
+    print_info("LoadFileMenu Initialized");
+}
 
 void LoadFileMenu::on_enter(WindowHandler& win_handler, MenuHandler& main_handler, SoundHandler& snd_handler) {
     Menu::on_enter(win_handler, main_handler, snd_handler);

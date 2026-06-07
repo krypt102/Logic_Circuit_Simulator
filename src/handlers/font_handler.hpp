@@ -2,42 +2,35 @@
 #define LOGIC_CIRCUIT_SIMULATOR_FONT_HANDLER_HPP
 
 #include <filesystem>
+#include <format>
 #include "splashkit.h"
 #include "../utils/terminal_utils.h"
-#include <format>
 
-namespace filesystem = std::filesystem;
 
 class FontHandler {
 public:
     int init_fonts() {
-        // This preloads the required fonts for the game...
-        // ... before any components load so SplashKit doesn't error.
-
-        filesystem::path font_folder_path = "Resources\\fonts";
-        if (!filesystem::exists(font_folder_path) || !filesystem::is_directory(font_folder_path)) {
-            print_error("Failed to load font folder");
+        std::filesystem::path font_folder = "Resources/fonts";
+        if (!std::filesystem::exists(font_folder) || !std::filesystem::is_directory(font_folder)) {
+            print_error("Font folder not found: " + font_folder.string());
             return 1;
         }
 
-        for (const filesystem::directory_entry& current_file : filesystem::directory_iterator(font_folder_path)) {
-            print_info(std::format(
-                R"(Loading font "{}" as "{}")",
-                current_file.path().string(),
-                current_file.path().stem().string()
-            ));
-            font loaded_font = load_font(current_file.path().stem().string(), current_file.path().string());
+        for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(font_folder)) {
+            std::string font_name = entry.path().stem().string();
+            std::string font_path = entry.path().string();
+            print_info(std::format(R"(Loading font "{}" as "{}")", font_path, font_name));
+
+            font loaded_font = load_font(font_name, font_path);
             if (!has_font(loaded_font)) {
-                print_error(std::format("Failed to load font \"{}\"", current_file.path().string()));
+                print_error(std::format(R"(Failed to load font "{}")", font_path));
                 return 1;
             }
         }
 
-        // load_font("JetBrainsMono_Reg", "JetBrainsMono-Regular.ttf");
-        print_info("Initialised fonts successfully");
-        // print_error("Deliberate error to halt");
+        print_info("All fonts loaded successfully");
         return 0;
     }
 };
 
-#endif //LOGIC_CIRCUIT_SIMULATOR_FONT_HANDLER_HPP
+#endif // LOGIC_CIRCUIT_SIMULATOR_FONT_HANDLER_HPP

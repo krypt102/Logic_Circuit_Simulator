@@ -15,4 +15,4 @@ private:
     SettingsHandler& settings_handler;
 };
 
-#endif //LOGIC_CIRCUIT_SIMULATOR_MAIN_MENU_HPP
+#endif // LOGIC_CIRCUIT_SIMULATOR_MAIN_MENU_HPP

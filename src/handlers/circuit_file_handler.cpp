@@ -1,7 +1,7 @@
 #include "circuit_file_handler.hpp"
 #include <filesystem>
 #include <fstream>
-
+#include <sstream>
 #include "../utils/terminal_utils.h"
 
 bool CircuitFileHandler::save_circuit(const Circuit& circuit) {
@@ -23,17 +23,15 @@ bool CircuitFileHandler::save_circuit(const Circuit& circuit) {
     file << "description:" << circuit.circuit_description << "\n";
     file << "next_id:" << circuit.next_id << "\n";
 
-    // --- Gates ---
     // Format: gate:<id>,<type>,<x_position>,<y_position>
     for (const Gate& gate : circuit.circuit_gates) {
         file << "gate:"
              << gate.id << ","
-             << gate_type_to_save_string(gate.gate_type) << ","
+             << gate_type_to_string(gate.gate_type) << ","
              << gate.x_position << ","
              << gate.y_position << "\n";
     }
 
-    // --- Input pins ---
     // Format: input_pin:<id>,<x_position>,<y_position>,<value>,<label>
     for (const InputPin& pin : circuit.circuit_input_pins) {
         file << "input_pin:"
@@ -44,7 +42,6 @@ bool CircuitFileHandler::save_circuit(const Circuit& circuit) {
              << pin.label << "\n";
     }
 
-    // --- Output pins ---
     // Format: output_pin:<id>,<x_position>,<y_position>,<label>
     for (const OutputPin& pin : circuit.circuit_output_pins) {
         file << "output_pin:"
@@ -54,7 +51,6 @@ bool CircuitFileHandler::save_circuit(const Circuit& circuit) {
              << pin.label << "\n";
     }
 
-    // --- Wires ---
     // Format: wire:<id>,<from_type>,<from_id>,<from_pin_id>,<to_type>,<to_id>,<to_pin_id>
     for (const Wire& wire : circuit.circuit_wires) {
         file << "wire:"
@@ -86,8 +82,7 @@ std::optional<Circuit> CircuitFileHandler::load_circuit(const std::string& filen
         return std::nullopt;
     }
 
-    // 1. Load the name, description, and next_id
-
+    //  1. Load the name, description, and next_id
     std::string loaded_name;
     std::string loaded_description;
     int loaded_next_id = 0;
@@ -96,60 +91,49 @@ std::optional<Circuit> CircuitFileHandler::load_circuit(const std::string& filen
     bool found_description = false;
     bool found_next_id = false;
 
-    // Lines with object details are stored and processed afterward
-    // ... so if the main parts (header/desc/next_id) fail, we
-    // ... don't bother with the objects (the file is gone)
-
     std::vector<std::string> object_lines;
     std::string line;
-
     int line_number = 0;
     while (std::getline(file, line)) {
         line_number++;
-
-        // Skip the empty lines
         if (line.empty()) {
             continue;
-        };
+        }
 
-        // Remove annoying characters
         if (line.back() == '\r') {
             line.pop_back();
         }
 
-        // Split on the first ':' to get key and value.
         size_t colon_pos = line.find(':');
         if (colon_pos == std::string::npos) {
-            print_warning("Line " + std::to_string(line_number) + " missing ':', skipping");
+            print_warning("Line " + std::to_string(line_number) + " is missing ':', skipping");
             continue;
         }
 
         std::string key = line.substr(0, colon_pos);
-        std::string value = line.substr(colon_pos + 1);
+        std::string val = line.substr(colon_pos + 1);
 
         if (key == "name") {
-            loaded_name = value;
-            found_name = true;
+            loaded_name = val;
+            found_name  = true;
         } else if (key == "description") {
-            loaded_description = value;
-            found_description = true;
+            loaded_description = val;
+            found_description  = true;
         } else if (key == "next_id") {
-            // next_id must be positive and not empty
-            bool is_valid_next_id = !value.empty();
-            for (char current_char : value) {
+            bool valid = !val.empty();
+            for (char current_char : val) {
                 if (!std::isdigit(current_char)) {
-                    is_valid_next_id = false;
+                    valid = false;
                     break;
                 }
             }
-            if (!is_valid_next_id) {
-                print_error("Line " + std::to_string(line_number) + " contains invalid next_id value: " + value);
+            if (!valid) {
+                print_error("Line " + std::to_string(line_number) + " has invalid next_id: " + val);
                 return std::nullopt;
             }
-            loaded_next_id = to_integer(value);
-            found_next_id = true;
+            loaded_next_id = to_integer(val);
+            found_next_id  = true;
         } else {
-            // gate, input_pin, output_pin, wire, etc.
             object_lines.push_back(line);
         }
     }
@@ -166,8 +150,8 @@ std::optional<Circuit> CircuitFileHandler::load_circuit(const std::string& filen
     for (const std::string& obj_line : object_lines) {
         size_t colon_pos = obj_line.find(':');
         std::string key = obj_line.substr(0, colon_pos);
-        std::string value = obj_line.substr(colon_pos + 1);
-        std::vector<std::string> parts = split_line(value);
+        std::string val = obj_line.substr(colon_pos + 1);
+        std::vector<std::string> parts = split_csv(val);
 
         if (key == "gate") {
             // gate:<id>,<type>,<x_position>,<y_position>
@@ -175,22 +159,14 @@ std::optional<Circuit> CircuitFileHandler::load_circuit(const std::string& filen
                 print_warning("Skipping broken gate line: " + obj_line);
                 continue;
             }
-
             GateType gate_type;
             if (!string_to_gate_type(parts[1], gate_type)) {
                 print_warning("Skipping gate with unknown type: " + parts[1]);
                 continue;
             }
-
             int id = to_integer(parts[0]);
-
-            // SplashKit with no "to_float" :(
             float x_position = std::stof(parts[2]);
             float y_position = std::stof(parts[3]);
-
-            // We dont want to call add_gate because that increments next_id
-            // ... we want it to retain its previous one.
-
             circuit.circuit_gates.emplace_back(id, gate_type, x_position, y_position);
 
         } else if (key == "input_pin") {
@@ -199,14 +175,13 @@ std::optional<Circuit> CircuitFileHandler::load_circuit(const std::string& filen
                 print_warning("Skipping broken input_pin line: " + obj_line);
                 continue;
             }
-
             int id = to_integer(parts[0]);
             float x_position = std::stof(parts[1]);
             float y_position = std::stof(parts[2]);
-            bool value_flag = (parts[3] == "1");
+            bool value = (parts[3] == "1");
 
             InputPin pin(id, x_position, y_position);
-            pin.value = value_flag;
+            pin.value = value;
             if (parts.size() >= 5) {
                 pin.label = parts[4];
             }
@@ -217,24 +192,21 @@ std::optional<Circuit> CircuitFileHandler::load_circuit(const std::string& filen
                 print_warning("Skipping broken output_pin line: " + obj_line);
                 continue;
             }
-
             int id = to_integer(parts[0]);
             float x_position = std::stof(parts[1]);
             float y_position = std::stof(parts[2]);
 
-            OutputPin out_pin(id, x_position, y_position);
+            OutputPin pin(id, x_position, y_position);
             if (parts.size() >= 4) {
-                out_pin.label = parts[3];
+                pin.label = parts[3];
             }
-            circuit.circuit_output_pins.push_back(out_pin);
-
+            circuit.circuit_output_pins.push_back(pin);
         } else if (key == "wire") {
             // wire:<id>,<from_type>,<from_id>,<from_pin_id>,<to_type>,<to_id>,<to_pin_id>
             if (parts.size() != 7) {
                 print_warning("Skipping broken wire line: " + obj_line);
                 continue;
             }
-
             WireConnectionType from_type, to_type;
             if (!string_to_wire_connection_type(parts[1], from_type)) {
                 print_warning("Skipping wire with unknown from_type: " + parts[1]);
@@ -244,13 +216,11 @@ std::optional<Circuit> CircuitFileHandler::load_circuit(const std::string& filen
                 print_warning("Skipping wire with unknown to_type: " + parts[4]);
                 continue;
             }
-
             int id = to_integer(parts[0]);
             int from_id = to_integer(parts[2]);
             int from_pin_id = to_integer(parts[3]);
             int to_id = to_integer(parts[5]);
             int to_pin_id = to_integer(parts[6]);
-
             circuit.circuit_wires.emplace_back(id, from_type, from_id, from_pin_id, to_type, to_id, to_pin_id);
         } else {
             print_warning("Skipping unrecognised line: " + key);
@@ -268,28 +238,34 @@ bool CircuitFileHandler::save_exists(const std::string& filename) {
 bool CircuitFileHandler::delete_circuit(const std::string& filename) {
     std::string file_path = build_file_path(filename);
     if (!std::filesystem::exists(file_path)) {
-        print_error("Cannot delete circuit, file not found: " + file_path);
+        print_error("Cannot delete circuit - file not found: " + file_path);
         return false;
     }
     std::filesystem::remove(file_path);
-    print_info("Deleted circuit: " + file_path);
+    print_info("Deleted circuit file: " + file_path);
     return true;
 }
 
-std::string CircuitFileHandler::build_file_path(const std::string& filename) {
+std::string CircuitFileHandler::build_file_path(const std::string& filename) const {
     return SAVES_FOLDER + "/" + filename + CIRCUIT_FILE_EXTENSION;
 }
 
-std::string CircuitFileHandler::wire_connection_type_to_string(WireConnectionType type) {
+std::string CircuitFileHandler::wire_connection_type_to_string(WireConnectionType type) const {
     switch (type) {
-        case WireConnectionType::GATE: return "GATE";
-        case WireConnectionType::INPUT_PIN: return "INPUT_PIN";
-        case WireConnectionType::OUTPUT_PIN: return "OUTPUT_PIN";
+        case WireConnectionType::GATE: {
+            return "GATE";
+        }
+        case WireConnectionType::INPUT_PIN: {
+            return "INPUT_PIN";
+        }
+        case WireConnectionType::OUTPUT_PIN: {
+            return "OUTPUT_PIN";
+        }
     }
     return "UNKNOWN";
 }
 
-bool CircuitFileHandler::string_to_wire_connection_type(const std::string& str, WireConnectionType& out_type) {
+bool CircuitFileHandler::string_to_wire_connection_type(const std::string& str, WireConnectionType& out_type) const {
     if (str == "GATE") {
         out_type = WireConnectionType::GATE;
         return true;
@@ -305,11 +281,7 @@ bool CircuitFileHandler::string_to_wire_connection_type(const std::string& str, 
     return false;
 }
 
-std::string CircuitFileHandler::gate_type_to_save_string(GateType type) {
-    return gate_type_to_string(type);
-}
-
-bool CircuitFileHandler::string_to_gate_type(const std::string& str, GateType& out_type) {
+bool CircuitFileHandler::string_to_gate_type(const std::string& str, GateType& out_type) const {
     if (str == "AND") {
         out_type = GateType::AND;
         return true;
@@ -341,13 +313,12 @@ bool CircuitFileHandler::string_to_gate_type(const std::string& str, GateType& o
     return false;
 }
 
-std::vector<std::string> CircuitFileHandler::split_line(const std::string& line) {
-    std::vector<std::string> split_parts;
+std::vector<std::string> CircuitFileHandler::split_csv(const std::string& line) const {
+    std::vector<std::string> parts;
     std::istringstream stream(line);
-    std::string current_part;
-
-    while (std::getline(stream, current_part, ',')) {
-        split_parts.push_back(current_part);
+    std::string part;
+    while (std::getline(stream, part, ',')) {
+        parts.push_back(part);
     }
-    return split_parts;
+    return parts;
 }

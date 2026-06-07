@@ -16,14 +16,14 @@ public:
 private:
     SettingsHandler& settings_handler;
 
+    mutable std::string circuit_name;
+    mutable std::string circuit_description;
     mutable std::string error_message;
-    mutable std::string new_file_name;
-    mutable std::string new_file_desc;
 
-    float last_text_box_x_position = 0.0f;
-    float last_text_box_y_position = 0.0f;
+    mutable float last_field_x = 0.0f;
+    mutable float last_field_y = 0.0f;
 
-    void try_create_project() const;
+    void try_create_circuit() const;
 };
 
-#endif //LOGIC_CIRCUIT_SIMULATOR_NEW_FILE_MENU_HPP
+#endif // LOGIC_CIRCUIT_SIMULATOR_NEW_FILE_MENU_HPP

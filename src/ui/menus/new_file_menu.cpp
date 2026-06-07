@@ -10,108 +10,108 @@
 #include "../components/UniqueButton.hpp"
 #include "../../utils/utilities.h"
 
-const float FORM_WIDTH = 440.0f;
-const float FORM_HEIGHT = 40.0f;
-const float VERTICAL_GAP = 56.0f;
-const int MAX_DESC_LENGTH = 80;
+const float NEW_FILE_MENU_FORM_WIDTH   = 440.0f;
+const float NEW_FILE_MENU_FORM_HEIGHT  = 40.0f;
+const float NEW_FILE_MENU_VERTICAL_GAP = 56.0f;
+const int NEW_FILE_MENU_MAX_DESC_LEN = 80;
 
-const std::string FONT_STR = "JetBrainsMono-Regular";
+const std::string NEW_FILE_MENU_FONT = "JetBrainsMono-Regular";
 
 NewFileMenu::NewFileMenu(SettingsHandler& settings_handler)
     : settings_handler(settings_handler)
-{}
+{
+    print_info("NewFileMenu Initialized");
+}
 
 void NewFileMenu::on_enter(WindowHandler& win_handler, MenuHandler& main_handler, SoundHandler& snd_handler) {
     Menu::on_enter(win_handler, main_handler, snd_handler);
     error_message.clear();
 }
 
-void NewFileMenu::try_create_project() const {
-    if (!is_valid_circuit_name(new_file_name)) {
+void NewFileMenu::try_create_circuit() const {
+    if (!is_valid_circuit_name(circuit_name)) {
         error_message = "Name cannot be empty or contain: /, \\, :, *, ?, \", <, >, |";
         return;
     }
 
-    // print_warning("New description length: " + to_string(new_file_desc.length()));
-    if (new_file_desc.length() > MAX_DESC_LENGTH) {
-        error_message = std::format("Maximum description length of {} characters", MAX_DESC_LENGTH);
+    if (circuit_description.length() > NEW_FILE_MENU_MAX_DESC_LEN) {
+        error_message = std::format("Maximum description length of {} characters", NEW_FILE_MENU_MAX_DESC_LEN);
         return;
     }
 
     CircuitFileHandler file_handler;
-    if (file_handler.save_exists(new_file_name)) {
-        error_message = "A circuit named '" + new_file_name + "' already exists.";
+    if (file_handler.save_exists(circuit_name)) {
+        error_message = "A circuit named '" + circuit_name + "' already exists.";
         return;
     }
 
-    Circuit created_circuit(new_file_name, new_file_desc);
-    bool saved = file_handler.save_circuit(created_circuit);
-    if (!saved) {
+    Circuit new_circuit(circuit_name, circuit_description);
+    if (!file_handler.save_circuit(new_circuit)) {
         error_message = "Failed to save circuit. Check the saves folder.";
         return;
     }
 
-    print_info("Created new circuit: " + new_file_name);
-
-    new_file_name.clear();
-    new_file_desc.clear();
+    print_info("Created new circuit: " + circuit_name);
+    circuit_name.clear();
+    circuit_description.clear();
     error_message.clear();
     menu_handler->push(
-        std::make_unique<CircuitEditorMenu>(std::move(created_circuit), settings_handler)
+        std::make_unique<CircuitEditorMenu>(std::move(new_circuit), settings_handler)
     );
 }
 
 void NewFileMenu::handle_input() {
-    float caption_text_size = 20;
+    const float caption_font_size = 20.0f;
+    float field_x = (window_handler->window_width / 2.0f) - (NEW_FILE_MENU_FORM_WIDTH / 2.0f);
+    float name_y = 140.0f;
+    float desc_y = name_y + NEW_FILE_MENU_VERTICAL_GAP;
 
-    float name_box_x_position = (window_handler->window_width / 2.0f) - (FORM_WIDTH / 2.0f);
-    float name_box_y_position = 140.0f;
-    std::string name_box_caption = "New file name:";
+    const std::string name_caption = "New file name:";
+    draw_text(
+        name_caption, COLOR_BLACK, NEW_FILE_MENU_FONT, (int)caption_font_size,
+        field_x - text_width(name_caption, NEW_FILE_MENU_FONT, (int)caption_font_size) - 10.0f,
+        name_y + (NEW_FILE_MENU_FORM_HEIGHT / 4.0f)
+    );
 
-    float name_box_caption_x_position = name_box_x_position - text_width(name_box_caption, FONT_STR, caption_text_size) - 10.0f;
-    float name_box_caption_y_position = name_box_y_position + (FORM_HEIGHT / 2.0f / 2.0f);
-    draw_text(name_box_caption, COLOR_BLACK, FONT_STR, caption_text_size, name_box_caption_x_position, name_box_caption_y_position);
+    const std::string desc_caption = "New file description:";
+    draw_text(
+        desc_caption, COLOR_BLACK, NEW_FILE_MENU_FONT, (int)caption_font_size,
+        field_x - text_width(desc_caption, NEW_FILE_MENU_FONT, (int)caption_font_size) - 10.0f,
+        desc_y + (NEW_FILE_MENU_FORM_HEIGHT / 4.0f)
+    );
 
-    float desc_box_x_position = (window_handler->window_width / 2.0f) - (FORM_WIDTH / 2.0f);
-    float desc_box_y_position = name_box_y_position + VERTICAL_GAP;
-    std::string desc_box_caption = "New file description:";
-
-    float desc_box_caption_x_position = desc_box_x_position - text_width(desc_box_caption, FONT_STR, caption_text_size) - 10.0f;
-    float desc_box_caption_y_position = desc_box_y_position + (FORM_HEIGHT / 2.0f / 2.0f);
-    draw_text(desc_box_caption, COLOR_BLACK, FONT_STR, caption_text_size, desc_box_caption_x_position, desc_box_caption_y_position);
-
-    new_file_name = text_box(new_file_name, rectangle_from(name_box_x_position, name_box_y_position, FORM_WIDTH, FORM_HEIGHT));
-    new_file_desc = text_box(new_file_desc, rectangle_from(desc_box_x_position, desc_box_y_position, FORM_WIDTH, FORM_HEIGHT));
-
-    last_text_box_x_position = desc_box_x_position;
-    last_text_box_y_position = desc_box_y_position;
+    circuit_name = text_box(circuit_name, rectangle_from(field_x, name_y, NEW_FILE_MENU_FORM_WIDTH, NEW_FILE_MENU_FORM_HEIGHT));
+    circuit_description = text_box(circuit_description, rectangle_from(field_x, desc_y, NEW_FILE_MENU_FORM_WIDTH, NEW_FILE_MENU_FORM_HEIGHT));
+    last_field_x = field_x;
+    last_field_y = desc_y;
 }
 
 void NewFileMenu::draw() const {
-    bool has_clicked_back = draw_back_button();
-    if (has_clicked_back) {
+    bool clicked_back = draw_back_button();
+    if (clicked_back) {
         sound_handler->play_sfx("ui_click");
         menu_handler->pop();
     }
 
-    std::string title_text = "Create New File";
-    int title_font_size = 28;
-    float title_x_position = (window_handler->window_width / 2.0f) - (text_width(title_text, FONT_STR, title_font_size) / 2.0f);
-    draw_text(title_text, COLOR_BLACK, FONT_STR, title_font_size, title_x_position, 60.0f);
+    const std::string title_text = "Create New File";
+    const int title_font_size = 28;
+    float title_x = (window_handler->window_width / 2.0f) - (text_width(title_text, NEW_FILE_MENU_FONT, title_font_size) / 2.0f);
+    draw_text(title_text, COLOR_BLACK, NEW_FILE_MENU_FONT, title_font_size, title_x, 60.0f);
 
-    bool create_button_pressed = unique_button("Create file", rectangle_from(
-        last_text_box_x_position + (FORM_WIDTH / 2.0f / 2.0f),
-        last_text_box_y_position + VERTICAL_GAP,
-        FORM_WIDTH / 2.0f,
-        FORM_HEIGHT
+    bool create_clicked = unique_button("Create file", rectangle_from(
+        last_field_x + (NEW_FILE_MENU_FORM_WIDTH / 4.0f),
+        last_field_y + NEW_FILE_MENU_VERTICAL_GAP,
+        NEW_FILE_MENU_FORM_WIDTH / 2.0f,
+        NEW_FILE_MENU_FORM_HEIGHT
     ));
 
-    if (create_button_pressed) {
+    if (create_clicked) {
         sound_handler->play_sfx("ui_click");
-        try_create_project();
+        try_create_circuit();
     }
+
     if (!error_message.empty()) {
-        float error_x_position = (window_handler->window_width / 2.0f) - (text_width(error_message, FONT_STR, 16) / 2.0f);
-        draw_text(error_message, COLOR_RED, FONT_STR, 16, error_x_position, window_handler->window_height - 60.0f);
+        float error_x = (window_handler->window_width / 2.0f) - (text_width(error_message, NEW_FILE_MENU_FONT, 16) / 2.0f);
+        draw_text(error_message, COLOR_RED, NEW_FILE_MENU_FONT, 16, error_x, window_handler->window_height - 60.0f);
     }
 }

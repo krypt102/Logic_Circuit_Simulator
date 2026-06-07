@@ -32,7 +32,9 @@ SettingsMenu::SettingsMenu(SettingsHandler& settings_handler)
       selected_res_index(1),
       monitor_width(1920),
       monitor_height(1080)
-{}
+{
+    print_info("SettingsMenu Initialized");
+}
 
 void SettingsMenu::on_enter(WindowHandler& win_handler, MenuHandler& main_handler, SoundHandler& snd_handler) {
     Menu::on_enter(win_handler, main_handler, snd_handler);

@@ -29,7 +29,9 @@ EditCircuitDetailsMenu::EditCircuitDetailsMenu(
       description_value(std::move(current_description)),
       original_name(std::move(original_name)),
       on_save(std::move(on_save))
-{}
+{
+    print_info("EditCircuitDetailsMenu Initialized");
+}
 
 void EditCircuitDetailsMenu::handle_input() {
     if (pending_cancel) {
