@@ -2,6 +2,7 @@
 #define LOGIC_CIRCUIT_SIMULATOR_SETTINGS_HANDLER_HPP
 
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <map>
 #include <ranges>
@@ -77,7 +78,7 @@ public:
     template<typename T>
     void set_setting(const std::string& key, T value) {
         if (!VALID_SETTING_TYPES.contains(key)) {
-            print_error("Unknown setting key: " + key);
+            print_error(std::format("Unknown setting key: {}", key));
             throw InvalidSettingKey();
         }
 
@@ -93,7 +94,7 @@ public:
         }
 
         if (!is_valid_setting(key, str_value)) {
-            print_error("Invalid value for setting: " + key);
+            print_error(std::format("Invalid value for setting: {}", key));
             throw InvalidSettingKey();
         }
 
@@ -108,7 +109,7 @@ public:
         }
 
         if (!VALID_SETTING_TYPES.contains(key)) {
-            print_error("Unknown setting key: " + key);
+            print_error(std::format("Unknown setting key: {}", key));
             throw InvalidSettingKey();
         }
 
@@ -207,7 +208,7 @@ private:
 
         for (const auto& key : VALID_SETTING_TYPES | std::views::keys) {
             if (!parsed.contains(key)) {
-                print_warning("Missing setting '" + key + "', reverting to defaults");
+                print_warning(std::format(R"(Missing setting "{}", reverting to default)", key));
                 revert_to_defaults();
                 return;
             }

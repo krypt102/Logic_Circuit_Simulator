@@ -12,7 +12,7 @@ public:
     int init_fonts() {
         std::filesystem::path font_folder = "Resources/fonts";
         if (!std::filesystem::exists(font_folder) || !std::filesystem::is_directory(font_folder)) {
-            print_error("Font folder not found: " + font_folder.string());
+            print_error(std::format("Font folder not found: {}", font_folder.string()));
             return 1;
         }
 

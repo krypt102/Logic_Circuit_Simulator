@@ -74,12 +74,12 @@ void LoadFileMenu::open_circuit(const std::string& filename) const {
     std::optional<Circuit> loaded_circuit = file_handler.load_circuit(filename);
 
     if (!loaded_circuit.has_value()) {
-        error_message = "Failed to load '" + filename + "'. The file may be corrupted.";
-        print_error("LoadFileMenu: failed to load circuit: " + filename);
+        error_message = std::format(R"(Failed to load "{}". The file may be corrupted.)", filename);
+        print_error(std::format("LoadFileMenu: failed to load circuit {}", filename));
         return;
     }
 
-    print_info("LoadFileMenu: circuit loaded: " + loaded_circuit->circuit_name);
+    print_info(std::format("LoadFileMenu: Circuit loaded - {}", loaded_circuit->circuit_name));
     menu_handler->push(
         std::make_unique<CircuitEditorMenu>(std::move(*loaded_circuit), settings_handler)
     );
@@ -93,7 +93,7 @@ void LoadFileMenu::confirm_delete(const std::string& filename) {
         if (file_handler.delete_circuit(filename)) {
             refresh_file_names();
         } else {
-            error_message = "Failed to delete '" + filename + "'.";
+            error_message = std::format(R"(Failed to delete "{}")", filename);
         }
         menu_handler->pop();
     }});
@@ -104,7 +104,7 @@ void LoadFileMenu::confirm_delete(const std::string& filename) {
 
     menu_handler->push(std::make_unique<Modal>(
         "Delete Circuit",
-        "Delete '" + filename + "'? \nThis cannot be undone.",
+        std::format(R"(Delete "{}"? \nThis cannot be undone.)", filename),
         std::move(modal_buttons)
     ));
 }
@@ -114,7 +114,7 @@ void LoadFileMenu::open_edit(const std::string& filename) {
     std::optional<Circuit> loaded = file_handler.load_circuit(filename);
 
     if (!loaded.has_value()) {
-        error_message = "Failed to load '" + filename + "'.";
+        error_message = std::format(R"(Failed to load "{}")", filename);
         return;
     }
 
@@ -126,7 +126,7 @@ void LoadFileMenu::open_edit(const std::string& filename) {
             CircuitFileHandler circuit_file_handler;
             std::optional<Circuit> loaded_circuit = circuit_file_handler.load_circuit(filename);
             if (!loaded_circuit.has_value()) {
-                error_message = "Failed to update '" + filename + "'.";
+                error_message = std::format(R"(Failed to update "{}")", filename);
                 return;
             }
             if (new_name != filename) {

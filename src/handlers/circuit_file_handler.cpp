@@ -1,5 +1,6 @@
 #include "circuit_file_handler.hpp"
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <sstream>
 #include "../utils/terminal_utils.h"
@@ -11,11 +12,11 @@ bool CircuitFileHandler::save_circuit(const Circuit& circuit) {
     }
 
     std::string file_path = build_file_path(circuit.circuit_name);
-    print_info("Saving circuit to: " + file_path);
+    print_info(std::format("Saving circuit to: {}", file_path));
 
     std::ofstream file(file_path);
     if (!file.is_open()) {
-        print_error("Failed to open file for saving: " + file_path);
+        print_error(std::format("Failed to open file for saving: {}", file_path));
         return false;
     }
 
@@ -69,16 +70,16 @@ bool CircuitFileHandler::save_circuit(const Circuit& circuit) {
 
 std::optional<Circuit> CircuitFileHandler::load_circuit(const std::string& filename) {
     std::string file_path = build_file_path(filename);
-    print_info("Loading circuit from: " + file_path);
+    print_info(std::format("Loading circuit from: {}", file_path));
 
     if (!std::filesystem::exists(file_path)) {
-        print_error("Circuit file not found: " + file_path);
+        print_error(std::format("Circuit file not found: {}", file_path));
         return std::nullopt;
     }
 
     std::ifstream file(file_path);
     if (!file.is_open()) {
-        print_error("Failed to open file for reading: " + file_path);
+        print_error(std::format("Failed to open file for reading: {}", file_path));
         return std::nullopt;
     }
 
@@ -106,7 +107,7 @@ std::optional<Circuit> CircuitFileHandler::load_circuit(const std::string& filen
 
         size_t colon_pos = line.find(':');
         if (colon_pos == std::string::npos) {
-            print_warning("Line " + std::to_string(line_number) + " is missing ':', skipping");
+            print_warning(std::format("Line {} is missing ':', skipping.", line_number));
             continue;
         }
 
@@ -128,7 +129,7 @@ std::optional<Circuit> CircuitFileHandler::load_circuit(const std::string& filen
                 }
             }
             if (!valid) {
-                print_error("Line " + std::to_string(line_number) + " has invalid next_id: " + val);
+                print_error(std::format("line {} has invalid next_id: {}", line_number, val));
                 return std::nullopt;
             }
             loaded_next_id = to_integer(val);
@@ -156,12 +157,12 @@ std::optional<Circuit> CircuitFileHandler::load_circuit(const std::string& filen
         if (key == "gate") {
             // gate:<id>,<type>,<x_position>,<y_position>
             if (parts.size() != 4) {
-                print_warning("Skipping broken gate line: " + obj_line);
+                print_warning(std::format("Skipping broken gate line: {}", obj_line));
                 continue;
             }
             GateType gate_type;
             if (!string_to_gate_type(parts[1], gate_type)) {
-                print_warning("Skipping gate with unknown type: " + parts[1]);
+                print_warning(std::format("Skipping gate with unknown type: {}", parts[1]));
                 continue;
             }
             int id = to_integer(parts[0]);
@@ -172,7 +173,7 @@ std::optional<Circuit> CircuitFileHandler::load_circuit(const std::string& filen
         } else if (key == "input_pin") {
             // input_pin:<id>,<x_position>,<y_position>,<value>,<label>
             if (parts.size() < 4) {
-                print_warning("Skipping broken input_pin line: " + obj_line);
+                print_warning(std::format("Skipping broken input_pin line: {}", obj_line));
                 continue;
             }
             int id = to_integer(parts[0]);
@@ -189,7 +190,7 @@ std::optional<Circuit> CircuitFileHandler::load_circuit(const std::string& filen
         } else if (key == "output_pin") {
             // output_pin:<id>,<x_position>,<y_position>,<label>
             if (parts.size() < 3) {
-                print_warning("Skipping broken output_pin line: " + obj_line);
+                print_warning(std::format("Skipping broken output_pin line: {}", obj_line));
                 continue;
             }
             int id = to_integer(parts[0]);
@@ -204,16 +205,16 @@ std::optional<Circuit> CircuitFileHandler::load_circuit(const std::string& filen
         } else if (key == "wire") {
             // wire:<id>,<from_type>,<from_id>,<from_pin_id>,<to_type>,<to_id>,<to_pin_id>
             if (parts.size() != 7) {
-                print_warning("Skipping broken wire line: " + obj_line);
+                print_warning(std::format("Skipping broken wire line: {}", obj_line));
                 continue;
             }
             WireConnectionType from_type, to_type;
             if (!string_to_wire_connection_type(parts[1], from_type)) {
-                print_warning("Skipping wire with unknown from_type: " + parts[1]);
+                print_warning(std::format("Skipping wire with unknown from_type: {}", parts[1]));
                 continue;
             }
             if (!string_to_wire_connection_type(parts[4], to_type)) {
-                print_warning("Skipping wire with unknown to_type: " + parts[4]);
+                print_warning(std::format("Skipping wire with unknown to_type: {}", parts[4]));
                 continue;
             }
             int id = to_integer(parts[0]);
@@ -223,11 +224,11 @@ std::optional<Circuit> CircuitFileHandler::load_circuit(const std::string& filen
             int to_pin_id = to_integer(parts[6]);
             circuit.circuit_wires.emplace_back(id, from_type, from_id, from_pin_id, to_type, to_id, to_pin_id);
         } else {
-            print_warning("Skipping unrecognised line: " + key);
+            print_warning(std::format("Skipping unrecognized line: {}", key));
         }
     }
 
-    print_info("Circuit loaded successfully: " + circuit.circuit_name);
+    print_info(std::format("Circuit loaded successfully: {}", circuit.circuit_name));
     return circuit;
 }
 
@@ -238,16 +239,16 @@ bool CircuitFileHandler::save_exists(const std::string& filename) {
 bool CircuitFileHandler::delete_circuit(const std::string& filename) {
     std::string file_path = build_file_path(filename);
     if (!std::filesystem::exists(file_path)) {
-        print_error("Cannot delete circuit - file not found: " + file_path);
+        print_error(std::format("Cannot delete circuit - file not found: {}", file_path));
         return false;
     }
     std::filesystem::remove(file_path);
-    print_info("Deleted circuit file: " + file_path);
+    print_info(std::format("Deleted circuit file: {}", file_path));
     return true;
 }
 
 std::string CircuitFileHandler::build_file_path(const std::string& filename) const {
-    return SAVES_FOLDER + "/" + filename + CIRCUIT_FILE_EXTENSION;
+    return std::format("{}/{}{}", SAVES_FOLDER, filename, CIRCUIT_FILE_EXTENSION);
 }
 
 std::string CircuitFileHandler::wire_connection_type_to_string(WireConnectionType type) const {

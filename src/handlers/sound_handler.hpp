@@ -12,7 +12,7 @@ public:
     int init_sfx() {
         std::filesystem::path sound_folder = "Resources/sounds";
         if (!std::filesystem::exists(sound_folder) || !std::filesystem::is_directory(sound_folder)) {
-            print_error("Sound folder not found: " + sound_folder.string());
+            print_error(std::format("Sound folder not found: {}", sound_folder.string()));
             return 1;
         }
 
@@ -35,7 +35,7 @@ public:
     int init_music_objects() {
         std::filesystem::path music_folder = "Resources/music";
         if (!std::filesystem::exists(music_folder) || !std::filesystem::is_directory(music_folder)) {
-            print_error("Music folder not found: " + music_folder.string());
+            print_error(std::format("Music folder not found: {}", music_folder.string()));
             return 1;
         }
 

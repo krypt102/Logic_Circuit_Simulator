@@ -41,7 +41,7 @@ void NewFileMenu::try_create_circuit() const {
 
     CircuitFileHandler file_handler;
     if (file_handler.save_exists(circuit_name)) {
-        error_message = "A circuit named '" + circuit_name + "' already exists.";
+        error_message = std::format(R"(A circuit named "{}" already exists)", circuit_name);
         return;
     }
 
@@ -51,7 +51,7 @@ void NewFileMenu::try_create_circuit() const {
         return;
     }
 
-    print_info("Created new circuit: " + circuit_name);
+    print_info(std::format("Created new circuit: {}", circuit_name));
     circuit_name.clear();
     circuit_description.clear();
     error_message.clear();

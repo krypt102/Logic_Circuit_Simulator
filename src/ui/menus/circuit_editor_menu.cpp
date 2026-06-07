@@ -53,14 +53,14 @@ CircuitEditorMenu::CircuitEditorMenu(Circuit circuit, SettingsHandler& settings_
       settings_handler(settings_handler),
       wire_start()
 {
-    print_info("CircuitEditorMenu Initialized for circuit: " + this->circuit.circuit_name);
+    print_info(std::format("CircuitEditorMenu Initialized for circuit: {}", this->circuit.circuit_name));
 }
 
 void CircuitEditorMenu::on_enter(WindowHandler &win_handler, MenuHandler &main_handler, SoundHandler &snd_handler) {
     Menu::on_enter(win_handler, main_handler, snd_handler);
     show_grid = settings_handler.get_setting<bool>("showGrid");
     snap_to_grid = show_grid && settings_handler.get_setting<bool>("snapToGrid");
-    print_info("Entered circuit editor: " + circuit.circuit_name);
+    print_info(std::format("Entered circuit editor: {}", circuit.circuit_name));
 }
 
 float CircuitEditorMenu::canvas_width() const {

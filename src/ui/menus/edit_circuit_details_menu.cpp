@@ -55,7 +55,7 @@ void EditCircuitDetailsMenu::handle_input() {
 
         CircuitFileHandler file_handler;
         if (name_value != original_name && file_handler.save_exists(name_value)) {
-            error_message = "A circuit named '" + name_value + "' already exists.";
+            error_message = std::format(R"(A circuit named "{}" already exists.)", name_value);
             return;
         }
 
