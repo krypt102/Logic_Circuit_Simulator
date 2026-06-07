@@ -84,15 +84,16 @@ void NewFileMenu::handle_input() {
     circuit_description = text_box(circuit_description, rectangle_from(field_x, desc_y, NEW_FILE_MENU_FORM_WIDTH, NEW_FILE_MENU_FORM_HEIGHT));
     last_field_x = field_x;
     last_field_y = desc_y;
-}
 
-void NewFileMenu::draw() const {
     bool clicked_back = draw_back_button();
     if (clicked_back) {
         sound_handler->play_sfx("ui_click");
         menu_handler->pop();
+        return;
     }
+}
 
+void NewFileMenu::draw() const {
     const std::string title_text = "Create New File";
     const int title_font_size = 28;
     float title_x = (window_handler->window_width / 2.0f) - (text_width(title_text, NEW_FILE_MENU_FONT, title_font_size) / 2.0f);

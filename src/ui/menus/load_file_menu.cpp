@@ -153,16 +153,16 @@ void LoadFileMenu::handle_input() {
         pending_edit_name.clear();
         open_edit(name);
     }
-}
 
-void LoadFileMenu::draw() const {
     bool has_clicked_back = draw_back_button();
     if (has_clicked_back) {
         sound_handler->play_sfx("ui_click");
         menu_handler->pop();
         return;
     }
+}
 
+void LoadFileMenu::draw() const {
     std::string title_text = "Load Circuit";
     int title_font_size = 28;
     float title_x = (window_handler->window_width / 2.0f) - (text_width(title_text, LOAD_FONT_STR, title_font_size) / 2.0f);

@@ -198,13 +198,19 @@ private:
     }
 
     void evaluate_gate(Gate& gate) {
-        bool first_input_value = gate.input_pins[0].value;
+        if (gate.input_pins.empty() || gate.output_pins.empty()) {
+            return;
+        }
 
+        bool first_input_value = gate.input_pins[0].value;
         if (gate.gate_type == GateType::NOT) {
             gate.output_pins[0].value = !first_input_value;
             return;
         }
 
+        if (gate.input_pins.size() < 2) {
+            return;
+        }
         bool second_input_value = gate.input_pins[1].value;
 
         if (gate.gate_type == GateType::AND) {
