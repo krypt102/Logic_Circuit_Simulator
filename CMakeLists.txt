@@ -46,4 +46,10 @@ add_executable(Logic_Circuit_Simulator
         src/ui/components/RenameModal.cpp
         src/ui/components/RenameModal.hpp
         src/classes/Menu.cpp)
+
+if(NOT DEFINED APP_VERSION)
+    set(APP_VERSION "-dev")
+endif()
+
+target_compile_definitions(Logic_Circuit_Simulator PRIVATE APP_VERSION="${APP_VERSION}")
 target_link_libraries(Logic_Circuit_Simulator PRIVATE SplashKit)

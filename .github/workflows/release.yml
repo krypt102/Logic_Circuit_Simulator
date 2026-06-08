@@ -1,0 +1,63 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up MSYS2 (MINGW64)
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            git
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+
+      - name: Install SplashKit
+        run: |
+          bash <(curl -s https://raw.githubusercontent.com/splashkit/skm/master/install-scripts/skm-install.sh)
+          skm global install
+
+      - name: Configure CMake
+        run: |
+          cmake -S . -B cmake-build-release -G "Ninja" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CXX_STANDARD=20 \
+            -DAPP_VERSION="${{ github.ref_name }}"
+
+      - name: Build
+        run: cmake --build cmake-build-release
+
+      - name: Bundle release
+        run: |
+          mkdir -p release/LogicCircuitSimulator
+          cp execs/Logic_Circuit_Simulator.exe release/LogicCircuitSimulator/
+          cp -r Resources release/LogicCircuitSimulator/Resources
+
+          ldd execs/Logic_Circuit_Simulator.exe \
+            | grep '/mingw64/' \
+            | awk '{print $3}' \
+            | xargs -I{} cp {} release/LogicCircuitSimulator/
+
+          cd release
+          7z a LogicCircuitSimulator-${{ github.ref_name }}-windows.zip LogicCircuitSimulator/
+
+      - name: Create and Upload Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/LogicCircuitSimulator-${{ github.ref_name }}-windows.zip
