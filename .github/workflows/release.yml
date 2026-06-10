@@ -49,14 +49,15 @@ jobs:
           mkdir -p release/LogicCircuitSimulator
           cp execs/Logic_Circuit_Simulator.exe release/LogicCircuitSimulator/
           cp -r Resources release/LogicCircuitSimulator/Resources
-
           ldd execs/Logic_Circuit_Simulator.exe \
             | grep '/mingw64/' \
             | awk '{print $3}' \
             | xargs -I{} cp {} release/LogicCircuitSimulator/
 
-          cd release
-          zip -r LogicCircuitSimulator-${{ github.ref_name }}-windows.zip LogicCircuitSimulator/
+      - name: Zip release
+        shell: pwsh
+        run: |
+          Compress-Archive -Path release/LogicCircuitSimulator -DestinationPath release/LogicCircuitSimulator-${{ github.ref_name }}-windows.zip
 
       - name: Create and Upload Release
         uses: softprops/action-gh-release@v2
