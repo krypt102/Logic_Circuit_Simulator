@@ -3,13 +3,13 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*'   # Runs whenever you push a tag like v1.0.0
 
 permissions:
   contents: write
 
 jobs:
-  build:
+  Build Windows Release:
     runs-on: windows-latest
 
     defaults:
@@ -52,7 +52,11 @@ jobs:
           mkdir -p release/LogicCircuitSimulator
           cp execs/Logic_Circuit_Simulator.exe release/LogicCircuitSimulator/
           cp -r Resources release/LogicCircuitSimulator/Resources
+
+          # Copy SplashKit.dll explicitly from where skm installs it
           cp "$HOME/.splashkit/lib/win64/SplashKit.dll" release/LogicCircuitSimulator/
+
+          # Copy MINGW64 runtime DLLs the exe depends on
           ldd execs/Logic_Circuit_Simulator.exe \
             | grep '/mingw64/' \
             | awk '{print $3}' \
@@ -61,9 +65,59 @@ jobs:
       - name: Zip release
         shell: pwsh
         run: |
-          Compress-Archive -Path release/LogicCircuitSimulator -DestinationPath release/LogicCircuitSimulator-${{ github.ref_name }}-windows.zip
+          Compress-Archive -Path release/LogicCircuitSimulator `
+            -DestinationPath release/LogicCircuitSimulator-${{ github.ref_name }}-windows.zip
 
-      - name: Create and Upload Release
+      - name: Upload
         uses: softprops/action-gh-release@v2
         with:
           files: release/LogicCircuitSimulator-${{ github.ref_name }}-windows.zip
+
+  Build MacOS Release:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install CMake and Ninja
+        run: brew install cmake ninja
+
+      - name: Install SplashKit
+        run: |
+          curl -s https://raw.githubusercontent.com/splashkit/skm/master/install-scripts/skm-install.sh | bash
+          export PATH="$HOME/.splashkit:$PATH"
+          skm global install
+
+      - name: Configure CMake
+        run: |
+          export PATH="$HOME/.splashkit:$PATH"
+          cmake -S . -B cmake-build-release -G "Ninja" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CXX_STANDARD=20 \
+            -DAPP_VERSION="${{ github.ref_name }}"
+
+      - name: Build
+        run: |
+          export PATH="$HOME/.splashkit:$PATH"
+          cmake --build cmake-build-release
+
+      - name: Bundle release
+        run: |
+          mkdir -p release/LogicCircuitSimulator
+          cp execs/Logic_Circuit_Simulator release/LogicCircuitSimulator/
+          cp -r Resources release/LogicCircuitSimulator/Resources
+          cp "$HOME/.splashkit/lib/macos/libSplashKit.dylib" release/LogicCircuitSimulator/
+
+          install_name_tool -change \
+            "$HOME/.splashkit/lib/macos/libSplashKit.dylib" \
+            "@executable_path/libSplashKit.dylib" \
+            release/LogicCircuitSimulator/Logic_Circuit_Simulator
+
+          zip -r release/LogicCircuitSimulator-${{ github.ref_name }}-macos.zip \
+            release/LogicCircuitSimulator/
+
+      - name: Upload
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/LogicCircuitSimulator-${{ github.ref_name }}-macos.zip
