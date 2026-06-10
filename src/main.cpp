@@ -7,8 +7,6 @@
 #include "ui/menus/main_menu.hpp"
 #include "utils/terminal_utils.h"
 
-const std::string VERSION_TEXT = "V" + std::string(APP_VERSION);
-
 int main() {
     // --- Initialisation ------------------------------------------------------
 
@@ -64,7 +62,7 @@ int main() {
             break;
         }
         draw_interface();
-        draw_text(VERSION_TEXT, COLOR_GRAY, "JetBrainsMono-Regular", 16, 10.0f, window_handler.window_height - 30.0f);
+        draw_text(std::string(APP_VERSION), COLOR_GRAY, "JetBrainsMono-Regular", 16, 10.0f, window_handler.window_height - 30.0f);
 
         refresh_screen(60);
     }
