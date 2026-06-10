@@ -52,6 +52,7 @@ jobs:
           mkdir -p release/LogicCircuitSimulator
           cp execs/Logic_Circuit_Simulator.exe release/LogicCircuitSimulator/
           cp -r Resources release/LogicCircuitSimulator/Resources
+          cp "$HOME/.splashkit/lib/win64/SplashKit.dll" release/LogicCircuitSimulator/
           ldd execs/Logic_Circuit_Simulator.exe \
             | grep '/mingw64/' \
             | awk '{print $3}' \
