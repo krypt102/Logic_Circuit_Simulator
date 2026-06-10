@@ -9,7 +9,8 @@ permissions:
   contents: write
 
 jobs:
-  Build Windows Release:
+  build-windows:
+    name: Build Windows Release
     runs-on: windows-latest
 
     defaults:
@@ -73,7 +74,8 @@ jobs:
         with:
           files: release/LogicCircuitSimulator-${{ github.ref_name }}-windows.zip
 
-  Build MacOS Release:
+  build-macos:
+    name: Build MacOS Release
     runs-on: macos-latest
 
     steps:
