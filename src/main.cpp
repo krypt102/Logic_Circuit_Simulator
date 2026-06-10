@@ -7,8 +7,18 @@
 #include "ui/menus/main_menu.hpp"
 #include "utils/terminal_utils.h"
 
+#ifdef __APPLE__
+    #include <mach-o/dyld.h>
+#endif
+
 int main() {
     // --- Initialisation ------------------------------------------------------
+    #ifdef __APPLE__
+        char path[PATH_MAX];
+        uint32_t size = PATH_MAX;
+        _NSGetExecutablePath(path, &size);
+        std::filesystem::current_path(std::filesystem::path(path).parent_path());
+    #endif
 
     print_info(std::format("LCS-{}", std::string(APP_VERSION)));
     print_info("Initialising settings");
