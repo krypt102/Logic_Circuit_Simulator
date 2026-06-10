@@ -10,6 +10,7 @@
 int main() {
     // --- Initialisation ------------------------------------------------------
 
+    print_info(std::format("LCS-{}", std::string(APP_VERSION)));
     print_info("Initialising settings");
     SettingsHandler game_settings;
     game_settings.load_settings();
