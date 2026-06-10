@@ -56,7 +56,7 @@ jobs:
             | xargs -I{} cp {} release/LogicCircuitSimulator/
 
           cd release
-          7z a LogicCircuitSimulator-${{ github.ref_name }}-windows.zip LogicCircuitSimulator/
+          zip -r LogicCircuitSimulator-${{ github.ref_name }}-windows.zip LogicCircuitSimulator/
 
       - name: Create and Upload Release
         uses: softprops/action-gh-release@v2
