@@ -23,6 +23,7 @@ private:
     mutable std::string error_message;
     mutable std::string pending_delete_name;
     mutable std::string pending_edit_name;
+    mutable bool pending_pop = false;
     mutable float scroll_offset = 0.0f;
     mutable float scroll_target = 0.0f;
 

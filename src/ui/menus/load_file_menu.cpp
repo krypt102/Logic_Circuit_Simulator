@@ -95,13 +95,12 @@ void LoadFileMenu::confirm_delete(const std::string& filename) {
         } else {
             error_message = std::format(R"(Failed to delete "{}")", filename);
         }
-        menu_handler->pop();
+        pending_pop = true;
     }});
 
-    modal_buttons.push_back({"Cancel", [this]() {
-        menu_handler->pop();
-    }});
-
+        modal_buttons.push_back({"Cancel", [this]() {
+            pending_pop = true;
+        }});
     menu_handler->push(std::make_unique<Modal>(
         "Delete Circuit",
         std::format(R"(Delete "{}"? \nThis cannot be undone.)", filename),
@@ -145,6 +144,12 @@ void LoadFileMenu::handle_input() {
         std::string name = pending_delete_name;
         pending_delete_name.clear();
         confirm_delete(name);
+        return;
+    }
+
+    if (pending_pop) {
+        pending_pop = false;
+        menu_handler->pop();
         return;
     }
 
